@@ -83,6 +83,10 @@ export default function Page() {
         ))}
       </View>
 
+      <View className="bg-red-500 p-4">
+        <Text className="text-white">Test Tailwind</Text>
+      </View>
+
     </ScrollView>
   );
 }

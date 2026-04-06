@@ -3,7 +3,10 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-jsx", 
-    "types": ["nativewind/types"],
+    "jsxImportSource": "nativewind",
+    "types": [
+      "nativewind/types"
+    ],
     "paths": {
       "@/*": [
         "./*"
@@ -14,6 +17,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "expo-env.d.ts",
+    "nativewind-env.d.ts"
   ]
 }

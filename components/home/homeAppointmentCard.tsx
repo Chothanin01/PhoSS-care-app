@@ -22,26 +22,17 @@ export default function AppointmentCard({
   location,
 }: Props) {
   return (
-    <View
-      style={{
-        backgroundColor: "#fff",
-        borderRadius: 16,
-        padding: 16,
-        width: screenWidth * 0.9,
-        marginRight: 16,
-      }}
-    >
+    <View className="bg-white rounded-2xl">
       <Text className="font-bold mb-2">ใบนัดแพทย์</Text>
 
       <Text>ชื่อ : {name} อายุ : {age}</Text>
       <Text>นัดวันที่ : {date}</Text>
       <Text>เวลา : {time}</Text>
 
-      <Text className="mt-2">โรค : เบาหวาน</Text>
+      <Text>โรค : เบาหวาน</Text>
       <Text>นัดเพื่อ : {department}</Text>
       <Text>สถานที่ : {location}</Text>
       <Text>นัดแพทย์ : {doctor}</Text>
-
     </View>
   );
 }
