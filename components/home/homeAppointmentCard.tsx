@@ -27,7 +27,7 @@ export default function AppointmentCard({
 }: Props) {
   return (
     <View className="bg-white rounded-2xl p-4 w-full shadow-black">
-      <Text className="font-semibold text-lg mb-2">ใบนัดแพทย์</Text>
+      <Text className="font-semibold text-xl mb-1">ใบนัดแพทย์</Text>
 
       <View className="flex-row justify-between mb-1">
         <Text className="font-medium">ชื่อ : {name}</Text>

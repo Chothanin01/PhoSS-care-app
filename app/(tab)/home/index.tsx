@@ -14,13 +14,13 @@ export default function Page() {
   const [selectedDisease, setSelectedDisease] = useState<string | null>(null);
   const [targetPath, setTargetPath] = useState<MenuPath | null>(null);
   const menuItems = [
-  { label: "เลื่อนนัด", icon: "calendar-outline", path: "/(tab)/reSchedule", needDisease: true },
-  { label: "ข้อมูลผู้ป่วย", icon: "person-outline", path: "/(tab)/patientData" },
-  { label: "การรักษา", icon: "medkit-outline", path: "/(tab)/home", needDisease: true },
-  { label: "ขอเอกสาร", icon: "cloud-download-outline", path: "/(tab)/document" },
-  { label: "แจ้งเตือน", icon: "notifications-outline", path: "/(tab)/notification" },
-  { label: "คู่มือการใช้งาน", icon: "settings-outline", path: "/(tab)/guide" },
-] as const;
+    { label: "เลื่อนนัด", icon: "calendar-outline", path: "/(tab)/reSchedule", needDisease: true },
+    { label: "ข้อมูลผู้ป่วย", icon: "person-outline", path: "/(tab)/patientData" },
+    { label: "การรักษา", icon: "medkit-outline", path: "/(tab)/home", needDisease: true },
+    { label: "ขอเอกสาร", icon: "cloud-download-outline", path: "/(tab)/document" },
+    { label: "แจ้งเตือน", icon: "notifications-outline", path: "/(tab)/notification" },
+    { label: "คู่มือการใช้งาน", icon: "settings-outline", path: "/(tab)/guide" },
+  ] as const;
 
   type MenuPath = (typeof menuItems)[number]["path"];
 
@@ -56,7 +56,7 @@ export default function Page() {
         </View>
 
         {/* AppointmentCard */}
-        <View className="mb-4">
+        <View className="mb-4" style={{ marginHorizontal: -16 }}>
           <ScrollView
             horizontal
             pagingEnabled
@@ -69,7 +69,7 @@ export default function Page() {
             scrollEventThrottle={16}
           >
             {appointments.map((item) => (
-              <View key={item.id} style={{ width: screenWidth, marginRight: 32 }}>
+              <View key={item.id} style={{ width: screenWidth, paddingHorizontal: 16 }}>
                 <AppointmentCard
                   key={item.id}
                   name={item.name}

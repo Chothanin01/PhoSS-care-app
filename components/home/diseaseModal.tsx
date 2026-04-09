@@ -73,7 +73,9 @@ export default function DiseaseModal({
             return (
               <TouchableOpacity
                 key={item}
-                onPress={() => setSelectedDisease(item)}
+                onPress={() =>
+                  setSelectedDisease(selectedDisease === item ? null : item)
+                }
                 className={`flex-row items-center p-3 rounded-xl mb-2 border border-navy
                   ${
                     isActive
@@ -83,7 +85,7 @@ export default function DiseaseModal({
               >
                 {/* radio */}
                 <View
-                  className={`w-5 h-5 rounded-full border border-navy justify-center items-center mr-3
+                  className={`w-5 h-5 rounded-full border justify-center items-center mr-3
                     ${
                       isActive
                         ? "bg-[#58AD46] border border-[#58AD46]"
