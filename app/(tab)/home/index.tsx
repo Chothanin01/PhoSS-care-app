@@ -71,6 +71,7 @@ export default function Page() {
             {appointments.map((item) => (
               <View key={item.id} style={{ width: screenWidth, paddingHorizontal: 16 }}>
                 <AppointmentCard
+                  id={String(item.id)}
                   key={item.id}
                   name={item.name}
                   age={item.age}

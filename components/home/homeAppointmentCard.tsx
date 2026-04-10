@@ -1,6 +1,8 @@
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { router } from "expo-router";
 
 type Props = {
+  id: string;
   name: string;
   age: string;
   date: string;
@@ -14,6 +16,7 @@ type Props = {
 };
 
 export default function AppointmentCard({
+  id,
   name,
   age,
   date,
@@ -26,7 +29,15 @@ export default function AppointmentCard({
   total,
 }: Props) {
   return (
-    <View className="bg-white rounded-2xl p-4 w-full shadow-black">
+    <Pressable
+      onPress={() => {
+        router.push({
+          pathname: "/(tab)/home/appointment/[id]",
+          params: { id },
+        });
+      }}
+      className="bg-white rounded-2xl p-4 w-full shadow-black"
+    >
       <Text className="font-semibold text-xl mb-1">ใบนัดแพทย์</Text>
 
       <View className="flex-row justify-between mb-1">
@@ -51,6 +62,6 @@ export default function AppointmentCard({
           />
         ))}
       </View>
-    </View>
+    </Pressable>
   );
 }
