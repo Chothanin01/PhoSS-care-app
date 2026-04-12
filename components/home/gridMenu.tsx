@@ -23,7 +23,7 @@ export default function GridMenu({ items, onPressItem }: Props) {
           onPress={() => onPressItem(item.path)}
         >
           <Ionicons name={item.icon} size={28} color="#05548D" />
-          <Text className="font-semibold" style={styles.boxText}>
+          <Text style={styles.boxText}>
             {item.label}
           </Text>
         </TouchableOpacity>
@@ -51,5 +51,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 12,
     textAlign: "center",
+    fontFamily: "IBMPlexSansThai_600SemiBold",
   },
 });

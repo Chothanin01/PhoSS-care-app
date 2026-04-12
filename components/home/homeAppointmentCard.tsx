@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, View, StyleSheet } from "react-native";
 import { router } from "expo-router";
 
 type Props = {
@@ -34,34 +34,85 @@ export default function AppointmentCard({
         router.push({
           pathname: "/(tab)/home/appointment/[id]",
           params: { id },
-        });
+        } as const);
       }}
-      className="bg-white rounded-2xl p-4 w-full shadow-black"
+      style={styles.card}
     >
-      <Text className="font-semibold text-xl mb-1">ใบนัดแพทย์</Text>
+      <Text style={styles.title}>ใบนัดแพทย์</Text>
 
-      <View className="flex-row justify-between mb-1">
-        <Text className="font-medium">ชื่อ : {name}</Text>
-        <Text className="font-medium">อายุ : {age}</Text>
+      <View style={styles.rowBetween}>
+        <Text style={styles.text}>ชื่อ : {name}</Text>
+        <Text style={styles.text}>อายุ : {age}</Text>
       </View>
-      <Text className="font-medium">นัดวันที่ : {date}</Text>
-      <Text className="font-medium">เวลา : {time}</Text>
 
-      <Text className="font-medium">โรค : {disease}</Text>
-      <Text className="font-medium">นัดเพื่อ : {department}</Text>
-      <Text className="font-medium">สถานที่ : {location}</Text>
-      <Text className="font-medium">นัดแพทย์ : {doctor}</Text>
+      <Text style={styles.text}>นัดวันที่ : {date}</Text>
+      <Text style={styles.text}>เวลา : {time}</Text>
 
-      <View className="flex-row justify-center mt-3">
+      <Text style={styles.text}>โรค : {disease}</Text>
+      <Text style={styles.text}>นัดเพื่อ : {department}</Text>
+      <Text style={styles.text}>สถานที่ : {location}</Text>
+      <Text style={styles.text}>นัดแพทย์ : {doctor}</Text>
+
+      <View style={styles.dotContainer}>
         {Array.from({ length: total }).map((_, i) => (
           <View
             key={i}
-            className={`w-2 h-2 rounded-full mx-1 ${
-              i === index ? "bg-[#58AD46]" : "bg-gray-300"
-            }`}
+            style={[
+              styles.dot,
+              i === index ? styles.activeDot : styles.inactiveDot,
+            ]}
           />
         ))}
       </View>
     </Pressable>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    width: "100%",
+    elevation: 3,
+  },
+
+  title: {
+    fontSize: 20,
+    fontFamily: "IBMPlexSansThai_600SemiBold",
+    marginBottom: 4,
+  },
+
+  text: {
+    fontSize: 14,
+    fontFamily: "IBMPlexSansThai_500Medium",
+    marginBottom: 2,
+  },
+
+  rowBetween: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+
+  dotContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 12,
+  },
+
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
+  },
+
+  activeDot: {
+    backgroundColor: "#58AD46",
+  },
+
+  inactiveDot: {
+    backgroundColor: "#D1D5DB",
+  },
+});

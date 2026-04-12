@@ -46,17 +46,19 @@ export default function Page() {
             style={styles.logo}
           />
 
-          <View style={{ flex: 1, marginLeft: 10 }}>
-            <Text className="font-semibold" style={styles.title}>โรงพยาบาลโพธิ์ศรีสุวรรณ</Text>
+          <View style={styles.headerText}>
+            <Text style={styles.title}>
+              โรงพยาบาลโพธิ์ศรีสุวรรณ
+            </Text>
 
             <View style={styles.underline} />
 
-            <Text className="font-medium" style={styles.hn}>HN 0012843</Text>
+            <Text style={styles.hn}>HN 0012843</Text>
           </View>
         </View>
 
         {/* AppointmentCard */}
-        <View className="mb-4" style={{ marginHorizontal: -16 }}>
+        <View style={styles.cardWrapper}>
           <ScrollView
             horizontal
             pagingEnabled
@@ -69,7 +71,10 @@ export default function Page() {
             scrollEventThrottle={16}
           >
             {appointments.map((item) => (
-              <View key={item.id} style={{ width: screenWidth, paddingHorizontal: 16 }}>
+              <View
+                key={item.id}
+                style={{ width: screenWidth, paddingHorizontal: 16 }}
+              >
                 <AppointmentCard
                   id={String(item.id)}
                   key={item.id}
@@ -118,17 +123,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "right",
-    marginRight: 20,
+  headerText: {
+    flex: 1,
+    marginLeft: 10,
   },
 
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
+  title: {
+    fontSize: 18,
+    fontFamily: "IBMPlexSansThai_600SemiBold",
+    textAlign: "right",
+    marginRight: 20,
   },
 
   logo: {
@@ -146,7 +150,13 @@ const styles = StyleSheet.create({
 
   hn: {
     fontSize: 14,
+    fontFamily: "IBMPlexSansThai_500Medium",
     textAlign: "right",
     marginRight: 20,
+  },
+
+  cardWrapper: {
+    marginBottom: 16,
+    marginHorizontal: -16,
   },
 });

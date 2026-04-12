@@ -8,44 +8,59 @@ export default function AppointmentDetail() {
   const { id } = useLocalSearchParams();
 
   const appointment = appointments.find(
-    a => a.id === Number(id)
+    (a) => a.id === Number(id)
   );
 
   if (!appointment) return <Text>ไม่พบข้อมูล</Text>;
 
   return (
-    <>
+
+    <View style={styles.wrapper}>
       <ScrollView style={styles.container}>
         <View>
-          <View className="flex-row items-center justify-between mb-4">
-            <BackButton />
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.backWrapper}>
+              <BackButton />
+            </View>
 
-            <Text className="text-2xl font-bold flex-1 text-center mr-10 mt-1" style={{ lineHeight: 40 }} >
+            <Text style={styles.title}>
               ใบนัดแพทย์
             </Text>
           </View>
-          <View className="bg-white rounded-2xl p-4 w-full shadow-black mb-4" style={styles.card}>
-            <View className="flex-row justify-between mb-1">
-              <Text className="font-medium">ชื่อ : {appointment.name}</Text>
-              <Text className="font-medium">HN {appointment.hn}</Text>
+        
+          {/* Card 1 */}
+          <View style={[styles.card, styles.cardShadow]}>
+            <View style={styles.rowBetween}>
+              <Text style={styles.textMedium}>
+                ชื่อ : {appointment.name}
+              </Text>
+              <Text style={styles.textMedium}>
+                HN {appointment.hn}
+              </Text>
             </View>
-            <Text className="font-medium">อายุ {appointment.age}</Text>
-          </View>
-          <View className="bg-white rounded-2xl p-4 w-full shadow-black">
-            <Text className="font-semibold text-xl mb-1">วันที่นัด {appointment.date}</Text>
 
-            <Text className="font-medium">เวลา : {appointment.time}</Text>
-            <Text className="font-medium">นัดเพื่อ : {appointment.department}</Text>
-            <Text className="font-medium">โรค : {appointment.disease}</Text>
-            <Text className="font-medium">สถานที่ : {appointment.location}</Text>
-            <Text className="font-medium">นัดพบแพทย์ : {appointment.doctor}</Text>
-            <Text className="font-medium">ผู้นัด : {appointment.createBy}</Text>
-            <Text className="font-medium">วันที่ออกใบนัด : {appointment.appointmentDate}</Text>
+            <Text style={styles.textMedium}>
+              อายุ {appointment.age}
+            </Text>
           </View>
 
+          {/* Card 2 */}
+          <View style={[styles.card, styles.cardShadow]}>
+            <Text style={styles.titleLarge}>วันที่นัด {appointment.date}</Text>
+
+            <Text style={styles.textMedium}>เวลา : {appointment.time}</Text>
+            <Text style={styles.textMedium}>นัดเพื่อ : {appointment.department}</Text>
+            <Text style={styles.textMedium}>โรค : {appointment.disease}</Text>
+            <Text style={styles.textMedium}>สถานที่ : {appointment.location}</Text>
+            <Text style={styles.textMedium}>นัดพบแพทย์ : {appointment.doctor}</Text>
+            <Text style={styles.textMedium}>ผู้นัด : {appointment.createBy}</Text>
+            <Text style={styles.textMedium}>วันที่ออกใบนัด : {appointment.appointmentDate}</Text>
+          </View>
         </View>
       </ScrollView>
 
+      {/* Bottom Button */}
       <View style={styles.bottomButton}>
         <AppButton
           title="เลื่อนนัด"
@@ -53,29 +68,83 @@ export default function AppointmentDetail() {
           onPress={() => {}}
         />
       </View>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+
+   wrapper: {
+    flex: 1,
+    backgroundColor: "#EBF7FF",
+  },
+  
   container: {
     flex: 1,
     backgroundColor: "#EBF7FF",
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 8,
   },
 
-  bottomButton: {
+  header: {
+    backgroundColor: "#EBF7FF",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  backWrapper: {
     position: "absolute",
-    bottom: 24,
-    left: 16,
-    right: 16,
+    left: 0,
+    zIndex: 1,
+  },
+
+  title: {
+    fontSize: 24,
+    fontFamily: "IBMPlexSansThai_700Bold",
+  },
+
+  titleLarge: {
+    fontSize: 20,
+    fontFamily: "IBMPlexSansThai_600SemiBold",
+    marginBottom: 4,
   },
 
   card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    width: "100%",
+    marginBottom: 16,
+  },
+
+  cardShadow: {
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+
+  rowBetween: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+
+  textMedium: {
+    fontSize: 14,
+    fontFamily: "IBMPlexSansThai_500Medium",
+    marginBottom: 2,
+  },
+
+ bottomButton: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+    paddingTop: 8,
+    backgroundColor: "#EBF7FF",
+    overflow: "visible",
   },
 });

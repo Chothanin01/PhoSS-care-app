@@ -1,6 +1,5 @@
-import "../global.css";
 import { Stack } from "expo-router";
-import { View } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useFonts } from "expo-font";
 import {
   IBMPlexSansThai_300Light,
@@ -22,8 +21,14 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   return (
-    <View className="flex-1 font-regular">
+    <View style={styles.container}>
       <Stack />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

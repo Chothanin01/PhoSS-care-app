@@ -1,4 +1,4 @@
-import { Modal, View, Text, TouchableOpacity } from "react-native";
+import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { MenuPath } from "@/types/navigation";
@@ -52,20 +52,14 @@ export default function DiseaseModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade">
-      <View className="flex-1 bg-black/40 justify-center items-center">
-        
-        <View className="w-[85%] bg-white rounded-2xl p-6">
+      <View style={styles.overlay}>
+        <View style={styles.modal}>
 
-          <TouchableOpacity
-            onPress={handleClose}
-            className="absolute top-3 right-3 z-10"
-          >
+          <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
             <Ionicons name="close" size={20} color="#666" />
           </TouchableOpacity>
 
-          <Text className="text-xl font-bold mb-3">
-            กรุณาเลือกโรคที่ต้องการ
-          </Text>
+          <Text style={styles.title}>กรุณาเลือกโรคที่ต้องการ</Text>
 
           {diseases.map((item) => {
             const isActive = selectedDisease === item;
@@ -76,28 +70,24 @@ export default function DiseaseModal({
                 onPress={() =>
                   setSelectedDisease(selectedDisease === item ? null : item)
                 }
-                className={`flex-row items-center p-3 rounded-xl mb-2 border border-navy
-                  ${
-                    isActive
-                      ? "border-navy bg-blue-50"
-                      : "border-gray-300"
-                  }`}
+                style={[
+                  styles.option,
+                  isActive ? styles.optionActive : styles.optionInactive,
+                ]}
               >
                 {/* radio */}
                 <View
-                  className={`w-5 h-5 rounded-full border justify-center items-center mr-3
-                    ${
-                      isActive
-                        ? "bg-[#58AD46] border border-[#58AD46]"
-                        : "border-navy"
-                    }`}
+                  style={[
+                    styles.radio,
+                    isActive ? styles.radioActive : styles.radioInactive,
+                  ]}
                 >
                   {isActive && (
-                    <Ionicons key={item} name="checkmark" size={14} color="#FFFFFF" />
+                    <Ionicons name="checkmark" size={14} color="#FFFFFF" />
                   )}
                 </View>
 
-                <Text className="text-base font-medium justify-center items-center">{item}</Text>
+                <Text style={styles.optionText}>{item}</Text>
               </TouchableOpacity>
             );
           })}
@@ -106,13 +96,14 @@ export default function DiseaseModal({
           <TouchableOpacity
             disabled={!selectedDisease}
             onPress={handleConfirm}
-            className={`mt-3 p-3 rounded-xl items-center ${
-              selectedDisease ? "bg-navy" : "bg-gray-300"
-            }`}
+            style={[
+              styles.confirmBtn,
+              selectedDisease
+                ? styles.confirmActive
+                : styles.confirmInactive,
+            ]}
           >
-            <Text className="text-white font-semibold text-lg">
-              ยืนยันการเลือก
-            </Text>
+            <Text style={styles.confirmText}>ยืนยันการเลือก</Text>
           </TouchableOpacity>
 
         </View>
@@ -120,3 +111,95 @@ export default function DiseaseModal({
     </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  modal: {
+    width: "85%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 24,
+  },
+
+  closeBtn: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    zIndex: 10,
+  },
+
+  title: {
+    fontSize: 20,
+    fontFamily: "IBMPlexSansThai_700Bold",
+    marginBottom: 12,
+  },
+
+  option: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+  },
+
+  optionActive: {
+    borderColor: "#05548D",
+    backgroundColor: "#EFF6FF",
+  },
+
+  optionInactive: {
+    borderColor: "#D1D5DB",
+  },
+
+  radio: {
+    width: 20,
+    height: 20,
+    borderRadius: 999,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+    borderWidth: 1,
+  },
+
+  radioActive: {
+    backgroundColor: "#58AD46",
+    borderColor: "#58AD46",
+  },
+
+  radioInactive: {
+    borderColor: "#05548D",
+  },
+
+  optionText: {
+    fontSize: 16,
+    fontFamily: "IBMPlexSansThai_500Medium",
+  },
+
+  confirmBtn: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+
+  confirmActive: {
+    backgroundColor: "#05548D",
+  },
+
+  confirmInactive: {
+    backgroundColor: "#D1D5DB",
+  },
+  
+  confirmText: {
+    color: "#fff",
+    fontSize: 18,
+    fontFamily: "IBMPlexSansThai_600SemiBold",
+  },
+});
