@@ -1,9 +1,9 @@
 import { View, Text } from "react-native";
 
-export default function ReSchedulePage() {
+export default function DocumentPage() {
   return (
     <View>
-      <Text>reSchedule</Text>
+      <Text>Document</Text>
     </View>
   );
 }
