@@ -1,3 +1,4 @@
+import BackButton from "@/components/home/backButton";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -33,18 +34,14 @@ export default function RescheduleScreen() {
     setCurrentDate(newDate);
     setSelectedDate(null);
   };
+
   const formatThaiDate = (day: number) => {
     const months = [
       "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
       "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
     ];
-
     const date = new Date(year, month, day);
-    const d = date.getDate();
-    const m = months[date.getMonth()];
-    const y = date.getFullYear() + 543;
-
-    return `${d} ${m} ${y}`;
+    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear() + 543}`;
   };
 
   const timeSlots = [
@@ -70,7 +67,6 @@ export default function RescheduleScreen() {
         setShowModal(false);
         router.replace("/home");
       }, 3000);
-
       return () => clearTimeout(timer);
     }
   }, [showModal]);
@@ -78,25 +74,33 @@ export default function RescheduleScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.wrapper}>
-        <View style={styles.content}>
+        <View style={styles.headerBar}>
+          <BackButton />
           <Text style={styles.title}>เลื่อนนัด</Text>
+          <View style={{ width: 40 }} />
+        </View>
+        <View style={styles.content}>
           <View style={styles.calendar}>
             <View style={styles.header}>
               <TouchableOpacity onPress={() => changeMonth(-1)}>
                 <Text>{"<"}</Text>
               </TouchableOpacity>
 
-              <Text style={styles.monthText}>
-                {currentDate.toLocaleString("th-TH", {
-                  month: "long",
-                  year: "numeric",
-                })}
-              </Text>
-              {selectedDate && (
-                <Text style={styles.selectedDateText}>
-                  วันที่ {formatThaiDate(selectedDate)}
+              <View style={styles.headerCenter}>
+                <Text style={styles.monthText}>
+                  {currentDate.toLocaleString("th-TH", {
+                    month: "long",
+                    year: "numeric",
+                  })}
                 </Text>
-              )}
+
+                {selectedDate && (
+                  <Text style={styles.selectedDateText}>
+                    {formatThaiDate(selectedDate)}
+                  </Text>
+                )}
+              </View>
+
               <TouchableOpacity onPress={() => changeMonth(1)}>
                 <Text>{">"}</Text>
               </TouchableOpacity>
@@ -177,7 +181,7 @@ export default function RescheduleScreen() {
           <View style={styles.modalBox}>
             <View style={styles.iconOuter}>
               <View style={styles.iconInner}>
-                <Ionicons name="checkmark" size={30} color="white" />
+                <Ionicons name="checkmark" size={24} color="white" />
               </View>
             </View>
 
@@ -196,6 +200,7 @@ export default function RescheduleScreen() {
   );
 }
 
+/* ---------- STYLE ---------- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -205,61 +210,85 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
   },
+
+  headerBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    marginTop: 50,
+  },
+
+  title: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+
   content: {
     padding: 16,
   },
-  title: {
-    marginTop: 20,
-    fontSize: 18,
-    fontWeight: "600",
-    textAlign: "center",
-  },
 
   calendar: {
-    marginTop: 20,
     backgroundColor: "#fff",
     borderRadius: 16,
     padding: 12,
   },
+
   header: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 10,
   },
+
+ headerCenter: {
+  flex: 1,
+  flexDirection: "row",         
+  justifyContent: "space-between", 
+  alignItems: "center",
+  marginHorizontal: 12,
+},
+
   monthText: {
     fontWeight: "bold",
     fontSize: 16,
   },
+
+  selectedDateText: {
+    fontSize: 14,
+    color: "#05548D",
+    textAlign: "right",
+  },
+
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
   },
+
   dayLabel: {
     width: "14.28%",
     textAlign: "center",
     marginBottom: 5,
     fontWeight: "bold",
   },
+
   dayBox: {
     width: "14.28%",
     aspectRatio: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-dayInner: {
-  width: 36,
-  height: 36,
-  borderRadius: 18,
-  justifyContent: "center",
-  alignItems: "center",
-},
-  daySelected: {
-    backgroundColor: "#58AD46",
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+
+  dayInner: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
+  },
+
+  daySelected: {
+    backgroundColor: "#58AD46",
   },
 
   sectionTitle: {
@@ -267,16 +296,19 @@ dayInner: {
     fontSize: 16,
     fontWeight: "600",
   },
+
   timeItem: {
     backgroundColor: "#fff",
     padding: 16,
     borderRadius: 14,
     marginTop: 10,
   },
+
   timeRow: {
     flexDirection: "row",
     alignItems: "center",
   },
+
   circle: {
     width: 24,
     height: 24,
@@ -287,10 +319,12 @@ dayInner: {
     alignItems: "center",
     marginRight: 12,
   },
+
   circleSelected: {
     backgroundColor: "#58AD46",
     borderColor: "#58AD46",
   },
+
   timeText: {
     fontSize: 15,
   },
@@ -302,9 +336,11 @@ dayInner: {
     alignItems: "center",
     margin: 16,
   },
+
   buttonDisabled: {
     backgroundColor: "#9ca3af",
   },
+
   buttonText: {
     color: "#fff",
     fontSize: 16,
@@ -318,6 +354,7 @@ dayInner: {
     alignItems: "center",
     padding: 10,
   },
+
   modalBox: {
     backgroundColor: "#fff",
     borderRadius: 20,
@@ -325,33 +362,30 @@ dayInner: {
     width: "100%",
     alignItems: "center",
   },
+
   iconOuter: {
     backgroundColor: "#DCFCE7",
     padding: 10,
     borderRadius: 999,
     marginBottom: 16,
   },
+
   iconInner: {
     backgroundColor: "#58AD46",
     padding: 8,
     borderRadius: 999,
   },
+
   modalTitle: {
     fontSize: 16,
     fontWeight: "700",
     textAlign: "center",
   },
+
   modalDesc: {
     marginTop: 8,
     fontSize: 13,
-    color: "#E1E1E1",
+    color: "#6b7280",
     textAlign: "center",
-  },
-  selectedDateText: {
-    textAlign: "right",
-    marginTop: 4,
-    fontSize: 14,
-    color: "#05548D",
-    fontWeight: "600",
   },
 });
