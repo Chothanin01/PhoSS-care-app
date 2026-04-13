@@ -1,8 +1,16 @@
-import { useLocalSearchParams } from "expo-router";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
-import { appointments } from "@/data/appointments";
-import BackButton from "@/components/backButton";
 import AppButton from "@/components/appButton";
+import BackButton from "@/components/backButton";
+import { appointments } from "@/data/appointments";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
+import {
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 export default function AppointmentDetail() {
   const { id } = useLocalSearchParams();
@@ -11,25 +19,30 @@ export default function AppointmentDetail() {
     (a) => a.id === Number(id)
   );
 
+  const [status, setStatus] = useState(appointment?.status);
+  const [showModal, setShowModal] = useState(false);
+
   if (!appointment) return <Text>ไม่พบข้อมูล</Text>;
 
-  return (
+  const getStatusStyle = () => {
+    if (status === "กำลังพิจารณา") return styles.pendingBadge;
+    if (status === "ถูกยกเลิก") return styles.cancelBadge;
+    return null;
+  };
 
+  return (
     <View style={styles.wrapper}>
       <ScrollView style={styles.container}>
         <View>
-          {/* Header */}
+
           <View style={styles.header}>
             <View style={styles.backWrapper}>
               <BackButton />
             </View>
 
-            <Text style={styles.title}>
-              ใบนัดแพทย์
-            </Text>
+            <Text style={styles.title}>ใบนัดแพทย์</Text>
           </View>
-        
-          {/* Card 1 */}
+
           <View style={[styles.card, styles.cardShadow]}>
             <View style={styles.rowBetween}>
               <Text style={styles.textMedium}>
@@ -45,9 +58,18 @@ export default function AppointmentDetail() {
             </Text>
           </View>
 
-          {/* Card 2 */}
           <View style={[styles.card, styles.cardShadow]}>
-            <Text style={styles.titleLarge}>วันที่นัด {appointment.date}</Text>
+            <View style={styles.rowBetween}>
+              <Text style={styles.titleLarge}>
+                วันที่นัด {appointment.date}
+              </Text>
+
+              {status && (
+                <View style={[styles.statusBadge, getStatusStyle()]}>
+                  <Text style={styles.statusText}>{status}</Text>
+                </View>
+              )}
+            </View>
 
             <Text style={styles.textMedium}>เวลา : {appointment.time}</Text>
             <Text style={styles.textMedium}>นัดเพื่อ : {appointment.department}</Text>
@@ -55,30 +77,74 @@ export default function AppointmentDetail() {
             <Text style={styles.textMedium}>สถานที่ : {appointment.location}</Text>
             <Text style={styles.textMedium}>นัดพบแพทย์ : {appointment.doctor}</Text>
             <Text style={styles.textMedium}>ผู้นัด : {appointment.createBy}</Text>
-            <Text style={styles.textMedium}>วันที่ออกใบนัด : {appointment.appointmentDate}</Text>
+            <Text style={styles.textMedium}>
+              วันที่ออกใบนัด : {appointment.appointmentDate}
+            </Text>
           </View>
+
+          {status === "กำลังพิจารณา" && (
+            <View style={styles.pendingBox}>
+              <Text style={styles.pendingText}>
+                เจ้าหน้าที่กำลังพิจารณาคำขอเลื่อนนัด
+              </Text>
+            </View>
+          )}
+
         </View>
       </ScrollView>
-
-      {/* Bottom Button */}
       <View style={styles.bottomButton}>
         <AppButton
-          title="เลื่อนนัด"
-          type="secondary"
-          onPress={() => {}}
+          title={
+            status === "กำลังพิจารณา"
+              ? "ยกเลิกการเลื่อนนัด"
+              : "เลื่อนนัด"
+          }
+          type={
+            status === "กำลังพิจารณา"
+              ? "danger"
+              : "secondary"
+          }
+          onPress={() => {
+            if (status === "กำลังพิจารณา") {
+              setShowModal(true);
+
+              setTimeout(() => {
+                setShowModal(false);
+                setStatus("ถูกยกเลิก");
+              }, 3000);
+            } else {
+              router.push("/(tab)/reSchedule");
+            }
+          }}
         />
       </View>
+      <Modal transparent visible={showModal} animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+
+            <View style={styles.iconOuter}>
+              <View style={styles.iconInner}>
+                <Ionicons name="close" size={24} color="white" />
+              </View>
+            </View>
+
+            <Text style={styles.modalTitle}>
+              ระบบได้ทำการยกเลิกการเลื่อนนัดเรียบร้อยแล้ว
+            </Text>
+
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-
-   wrapper: {
+  wrapper: {
     flex: 1,
     backgroundColor: "#EBF7FF",
   },
-  
+
   container: {
     flex: 1,
     backgroundColor: "#EBF7FF",
@@ -132,6 +198,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 4,
+    alignItems: "center",
   },
 
   textMedium: {
@@ -140,11 +207,81 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 
- bottomButton: {
+  bottomButton: {
     paddingHorizontal: 16,
     paddingBottom: 24,
     paddingTop: 8,
     backgroundColor: "#EBF7FF",
-    overflow: "visible",
   },
+
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+
+  pendingBadge: {
+    backgroundColor: "#FFF3CD",
+  },
+
+  cancelBadge: {
+    backgroundColor: "rgba(251, 76, 76, 0.3)"
+  },
+
+  statusText: {
+    fontSize: 12,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  modalBox: {
+    width: "85%",
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 20,
+    alignItems: "center",
+  },
+
+  iconOuter: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: "#FEE2E2",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  iconInner: {
+    width: 45,
+    height: 45,
+    borderRadius: 22,
+    backgroundColor: "#FB4C4C",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  modalTitle: {
+    fontSize: 18,
+    textAlign: "center",
+    marginBottom: 6,
+  },
+  pendingBox: {
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+
+  pendingText: {
+    fontSize: 18,
+  },
+
 });

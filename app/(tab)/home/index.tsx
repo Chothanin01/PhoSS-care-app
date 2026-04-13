@@ -1,10 +1,10 @@
-import { ScrollView, StyleSheet, Text, View, Image, Dimensions } from "react-native";
+import DiseaseModal from "@/components/home/diseaseModal";
+import GridMenu from "@/components/home/gridMenu";
 import AppointmentCard from "@/components/home/homeAppointmentCard";
 import { appointments } from "@/data/appointments";
-import { useState } from "react";
-import GridMenu from "@/components/home/gridMenu";
-import DiseaseModal from "@/components/home/diseaseModal";
 import { router } from "expo-router";
+import { useState } from "react";
+import { Dimensions, Image, ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function Page() {
 
@@ -88,6 +88,7 @@ export default function Page() {
                   doctor={item.doctor}
                   index={index}
                   total={appointments.length}
+                  status={item.status}
                 />
               </View>
             ))}

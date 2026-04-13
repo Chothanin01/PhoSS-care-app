@@ -1,7 +1,7 @@
-import BackButton from "@/components/home/backButton";
+import BackButton from "@/components/backButton";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Modal,
   StyleSheet,
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: "600",
   },
 

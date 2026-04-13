@@ -1,5 +1,5 @@
-import { Pressable, Text, View, StyleSheet } from "react-native";
 import { router } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 type Props = {
   id: string;
@@ -12,7 +12,8 @@ type Props = {
   doctor: string;
   location: string;
   index: number;
-  total: number; 
+  total: number;
+  status?: string;
 };
 
 export default function AppointmentCard({
@@ -27,6 +28,7 @@ export default function AppointmentCard({
   location,
   index,
   total,
+  status,
 }: Props) {
   return (
     <Pressable
@@ -38,7 +40,15 @@ export default function AppointmentCard({
       }}
       style={styles.card}
     >
-      <Text style={styles.title}>ใบนัดแพทย์</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>ใบนัดแพทย์</Text>
+
+        {status && (
+          <View style={styles.statusBadge}>
+            <Text style={styles.statusText}>{status}</Text>
+          </View>
+        )}
+      </View>
 
       <View style={styles.rowBetween}>
         <Text style={styles.text}>ชื่อ : {name}</Text>
@@ -114,5 +124,24 @@ const styles = StyleSheet.create({
 
   inactiveDot: {
     backgroundColor: "#D1D5DB",
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+
+  statusBadge: {
+    backgroundColor: "#FFF3CD",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+
+  statusText: {
+    color: "#856404",
+    fontSize: 12,
+    fontFamily: "IBMPlexSansThai_500Medium",
   },
 });
