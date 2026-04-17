@@ -1,17 +1,23 @@
 import BackButton from "@/components/backButton";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Modal,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 export default function RescheduleScreen() {
   const router = useRouter();
+  const { disease } = useLocalSearchParams();
+
+  const mode =
+    disease === "วัคซีนเด็ก"
+      ? "vaccine"
+      : "reschedule";
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
@@ -66,7 +72,7 @@ export default function RescheduleScreen() {
       const timer = setTimeout(() => {
         setShowModal(false);
         router.replace("/home");
-      }, 3000);
+      }, 2500);
       return () => clearTimeout(timer);
     }
   }, [showModal]);
@@ -74,11 +80,15 @@ export default function RescheduleScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.wrapper}>
+
         <View style={styles.headerBar}>
           <BackButton />
-          <Text style={styles.title}>เลื่อนนัด</Text>
+          <Text style={styles.title}>
+            {mode === "vaccine" ? "จองวันฉีดวัคซีน" : "เลื่อนนัด"}
+          </Text>
           <View style={{ width: 40 }} />
         </View>
+
         <View style={styles.content}>
           <View style={styles.calendar}>
             <View style={styles.header}>
@@ -136,6 +146,7 @@ export default function RescheduleScreen() {
               })}
             </View>
           </View>
+
           <Text style={styles.sectionTitle}>เลือกช่วงเวลา</Text>
 
           {timeSlots.map((time) => {
@@ -164,6 +175,7 @@ export default function RescheduleScreen() {
             );
           })}
         </View>
+
         <TouchableOpacity
           disabled={isDisabled}
           onPress={() => setShowModal(true)}
@@ -172,7 +184,9 @@ export default function RescheduleScreen() {
             isDisabled && styles.buttonDisabled,
           ]}
         >
-          <Text style={styles.buttonText}>ยืนยันการเลื่อนนัด</Text>
+          <Text style={styles.buttonText}>
+            {mode === "vaccine" ? "ยืนยันการจอง" : "ยืนยันการเลื่อนนัด"}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -185,14 +199,31 @@ export default function RescheduleScreen() {
               </View>
             </View>
 
-            <Text style={styles.modalTitle}>ระบบได้ส่งคำขอ</Text>
-            <Text style={styles.modalTitle}>
-              การเลื่อนนัดเรียบร้อยแล้ว
-            </Text>
-
-            <Text style={styles.modalDesc}>
-              ระบบจะทำการแจ้งเตือนเมื่อคำขอได้รับอนุมัติแล้ว
-            </Text>
+            {mode === "vaccine" ? (
+              <>
+                <Text style={styles.modalTitle}>
+                  ระบบได้ส่งคำขอ
+                </Text>
+                <Text style={styles.modalTitle}>
+                  การจองรับวัคซีนเรียบร้อยแล้ว
+                </Text>
+                <Text style={styles.modalDesc}>
+                  ระบบจะทำการแจ้งเตือนเมื่อคำขอได้รับอนุมัติแล้ว
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.modalTitle}>
+                  ระบบได้ส่งคำขอ
+                </Text>
+                <Text style={styles.modalTitle}>
+                  การเลื่อนนัดเรียบร้อยแล้ว
+                </Text>
+                <Text style={styles.modalDesc}>
+                  ระบบจะทำการแจ้งเตือนเมื่อคำขอได้รับอนุมัติแล้ว
+                </Text>
+              </>
+            )}
           </View>
         </View>
       </Modal>
@@ -200,12 +231,12 @@ export default function RescheduleScreen() {
   );
 }
 
-/* ---------- STYLE ---------- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#EBF7FF",
   },
+
   wrapper: {
     flex: 1,
     justifyContent: "space-between",
@@ -216,7 +247,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    marginTop: 50,
+    marginTop: 30,
   },
 
   title: {
@@ -241,13 +272,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
- headerCenter: {
-  flex: 1,
-  flexDirection: "row",         
-  justifyContent: "space-between", 
-  alignItems: "center",
-  marginHorizontal: 12,
-},
+  headerCenter: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginHorizontal: 12,
+  },
 
   monthText: {
     fontWeight: "bold",
