@@ -181,7 +181,7 @@ export default function RescheduleScreen() {
           <View style={styles.modalBox}>
             <View style={styles.iconOuter}>
               <View style={styles.iconInner}>
-                <Ionicons name="checkmark" size={24} color="white" />
+                <Ionicons name="checkmark" size={32} color="white" />
               </View>
             </View>
 
@@ -364,16 +364,22 @@ const styles = StyleSheet.create({
   },
 
   iconOuter: {
-    backgroundColor: "#DCFCE7",
-    padding: 10,
+    width: 100,
+    height: 100,
     borderRadius: 999,
+    backgroundColor: "#C8E6C9",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 16,
   },
 
   iconInner: {
-    backgroundColor: "#58AD46",
-    padding: 8,
+    width: 70,
+    height: 70,
     borderRadius: 999,
+    backgroundColor: "#4CAF50",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   modalTitle: {
