@@ -1,7 +1,7 @@
 export type MenuPath =
-  | "/(tab)/home"
   | "/(tab)/document"
   | "/(tab)/guide"
+  | "/(tab)/medicalHis"
   | "/(tab)/notification"
   | "/(tab)/patientData"
   | "/(tab)/reSchedule";
