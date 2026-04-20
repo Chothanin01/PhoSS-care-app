@@ -127,7 +127,12 @@ export default function RescheduleScreen() {
                         isSelected && styles.daySelected,
                       ]}
                     >
-                      <Text style={isSelected && { color: "white" }}>
+                      <Text
+                        style={[
+                          isSelected && { color: "white" },
+                          { fontFamily: "IBMPlexSansThai_600Medium" },
+                        ]}
+                      >
                         {day || ""}
                       </Text>
                     </View>
@@ -216,12 +221,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    marginTop: 50,
+    marginTop: 20,
   },
 
   title: {
     fontSize: 24,
     fontWeight: "600",
+    fontFamily: "IBMPlexSansThai_600bold"
   },
 
   content: {
@@ -241,23 +247,25 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
- headerCenter: {
-  flex: 1,
-  flexDirection: "row",         
-  justifyContent: "space-between", 
-  alignItems: "center",
-  marginHorizontal: 12,
-},
+  headerCenter: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginHorizontal: 12,
+  },
 
   monthText: {
     fontWeight: "bold",
     fontSize: 16,
+    fontFamily: "IBMPlexSansThai_600Medium",
   },
 
   selectedDateText: {
     fontSize: 14,
     color: "#05548D",
     textAlign: "right",
+    fontFamily: "IBMPlexSansThai_600Medium",
   },
 
   grid: {
@@ -270,6 +278,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 5,
     fontWeight: "bold",
+    fontFamily: "IBMPlexSansThai_600Medium",
   },
 
   dayBox: {
@@ -295,6 +304,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     fontWeight: "600",
+    fontFamily: "IBMPlexSansThai_600Semibold"
   },
 
   timeItem: {
@@ -327,6 +337,7 @@ const styles = StyleSheet.create({
 
   timeText: {
     fontSize: 15,
+    fontFamily: "IBMPlexSansThai_600Medium",
   },
 
   button: {
@@ -343,8 +354,9 @@ const styles = StyleSheet.create({
 
   buttonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "600",
+    fontFamily: "IBMPlexSansThai_600bold",
   },
 
   modalOverlay: {
@@ -383,15 +395,17 @@ const styles = StyleSheet.create({
   },
 
   modalTitle: {
-    fontSize: 16,
-    fontWeight: "700",
+    fontSize: 20,
+    fontWeight: "500",
     textAlign: "center",
+    fontFamily: "IBMPlexSansThai_600bold",
   },
 
   modalDesc: {
     marginTop: 8,
-    fontSize: 13,
+    fontSize: 16,
     color: "#6b7280",
     textAlign: "center",
+    fontFamily: "IBMPlexSansThai_600Medium",
   },
 });
