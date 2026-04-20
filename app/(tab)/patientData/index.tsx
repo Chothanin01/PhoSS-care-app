@@ -1,5 +1,7 @@
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import BackButton from "@/components/backButton";
+import AppButton from "@/components/appButton";
+import { router } from "expo-router";
 
 export default function PatientDataPage() {
   const patient = {
@@ -135,6 +137,14 @@ export default function PatientDataPage() {
             </View>
           ))}
       </View>
+
+      <View style={styles.bottomButton}>
+        <AppButton
+          title="ขอเอกสาร"
+          type="secondary"
+          onPress={() => router.push("/(tab)/document")}
+        />
+      </View>
     </ScrollView>
   );
 }
@@ -209,5 +219,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "IBMPlexSansThai_600SemiBold",
     marginBottom: 2,
+  },
+
+  bottomButton: {
+    paddingBottom: 24,
+    paddingTop: 8,
+    backgroundColor: "#EBF7FF",
+    overflow: "visible",
   },
 });

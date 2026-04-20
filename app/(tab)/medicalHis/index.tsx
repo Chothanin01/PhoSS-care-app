@@ -71,7 +71,11 @@ export default function MedicalHisPage() {
               <Text style={styles.date}>{item.date}</Text>
             </View>
 
-            <Text style={styles.text}>
+            <Text
+              style={styles.text}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
               การรักษา : {item.Note}
             </Text>
 
