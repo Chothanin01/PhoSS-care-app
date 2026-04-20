@@ -15,7 +15,7 @@ const documentsList = [
   "ใบรับรองแพทย์",
 ];
 
-type StatusType = "idle" | "selected" | "pending" | "approved";
+type StatusType = "idle" | "selected";
 
 type DocItem = {
   name: string;
@@ -37,8 +37,6 @@ export default function DocumentRequestScreen() {
       prev.map((doc) => {
         if (doc.name !== item) return doc;
 
-        if (doc.status === "pending") return doc;
-
         return {
           ...doc,
           status:
@@ -54,14 +52,10 @@ export default function DocumentRequestScreen() {
 
   const toggleSelectAll = () => {
     setDocuments((prev) =>
-      prev.map((doc) => {
-        if (doc.status === "pending") return doc;
-
-        return {
-          ...doc,
-          status: isAllSelected ? "idle" : "selected",
-        };
-      })
+      prev.map((doc) => ({
+        ...doc,
+        status: isAllSelected ? "idle" : "selected",
+      }))
     );
   };
 
@@ -72,53 +66,15 @@ export default function DocumentRequestScreen() {
 
     if (!hasSelected) return;
 
-    setDocuments((prev) =>
-      prev.map((doc) =>
-        doc.status === "selected"
-          ? { ...doc, status: "pending" }
-          : doc
-      )
-    );
-
     setShowSuccess(true);
 
     setTimeout(() => {
       setShowSuccess(false);
     }, 3000);
-
-    //  mock API
-    setTimeout(() => {
-      setDocuments((prev) =>
-        prev.map((doc) =>
-          doc.status === "pending"
-            ? { ...doc, status: "approved" }
-            : doc
-        )
-      );
-    }, 5000);
-  };
-
-  const getStatusText = (status: StatusType) => {
-    switch (status) {
-      case "pending":
-        return "กำลังดำเนินการ";
-      case "approved":
-        return "สามารถรับเอกสารได้ที่โรงพยาบาล";
-    }
-  };
-
-  const getStatusColor = (status: StatusType) => {
-    switch (status) {
-      case "pending":
-        return "#F59E0B";
-      case "approved":
-        return "#4CAF50";
-    }
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <BackButton />
         <Text style={styles.headerTitle}>เอกสารที่ต้องการขอ</Text>
@@ -147,16 +103,13 @@ export default function DocumentRequestScreen() {
 
         {documents.map((item) => {
           const isSelected = item.status === "selected";
-          const isPending = item.status === "pending";
 
           return (
             <TouchableOpacity
               key={item.name}
-              disabled={isPending}
               style={[
                 styles.option,
                 isSelected && styles.optionActive,
-                isPending && styles.optionDisabled,
               ]}
               onPress={() => toggleItem(item.name)}
             >
@@ -186,34 +139,6 @@ export default function DocumentRequestScreen() {
             ขอเอกสารรับรอง
           </Text>
         </TouchableOpacity>
-      </View>
-
-      <View style={styles.statusBox}>
-        <Text style={styles.statusTitle}>
-          สถานะเอกสาร
-        </Text>
-
-        {documents
-          .filter(
-            (doc) =>
-              doc.status === "pending" ||
-              doc.status === "approved"
-          )
-          .map((doc) => (
-            <View
-              key={doc.name}
-              style={styles.statusItem}
-            >
-              <Text>{doc.name}</Text>
-              <Text
-                style={{
-                  color: getStatusColor(doc.status),
-                }}
-              >
-                {getStatusText(doc.status)}
-              </Text>
-            </View>
-          ))}
       </View>
 
       {showSuccess && (
@@ -261,8 +186,8 @@ const styles = StyleSheet.create({
 
   headerTitle: {
     fontSize: 24,
-    fontWeight: "600",
     marginLeft: 46,
+    fontFamily: "IBMPlexSansThai_700bold",
   },
 
   card: {
@@ -273,7 +198,8 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 16,
+    fontSize: 18,
+    fontFamily: "IBMPlexSansThai_600Semibold",
   },
 
   topRow: {
@@ -291,6 +217,7 @@ const styles = StyleSheet.create({
   selectAllText: {
     marginLeft: 6,
     fontSize: 12,
+    fontFamily: "IBMPlexSansThai_500Medium", 
   },
 
   checkbox: {
@@ -324,10 +251,6 @@ const styles = StyleSheet.create({
     borderColor: "#05548D",
   },
 
-  optionDisabled: {
-    opacity: 0.5,
-  },
-
   radio: {
     width: 22,
     height: 22,
@@ -347,10 +270,12 @@ const styles = StyleSheet.create({
   check: {
     color: "#fff",
     fontSize: 14,
+    fontFamily: "IBMPlexSansThai_500Medium",
   },
 
   optionText: {
     fontSize: 14,
+    fontFamily: "IBMPlexSansThai_500Medium",
   },
 
   button: {
@@ -365,24 +290,8 @@ const styles = StyleSheet.create({
 
   buttonText: {
     color: "#05548D",
-  },
-
-  statusBox: {
-    marginTop: 20,
-    backgroundColor: "#FFFFFF",
-    padding: 16,
-    borderRadius: 12,
-  },
-
-  statusTitle: {
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-
-  statusItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 6,
+    fontSize: 16,
+    fontFamily: "IBMPlexSansThai_500Medium",
   },
 
   modalOverlay: {
@@ -424,15 +333,16 @@ const styles = StyleSheet.create({
   },
 
   modalTitle: {
-    fontSize: 18,
-    fontWeight: "600",
+    fontSize: 20,
     textAlign: "center",
+    fontFamily: "IBMPlexSansThai_700bold",
   },
 
   modalDesc: {
     marginTop: 8,
-    fontSize: 12,
+    fontSize: 16,
     color: "#666",
     textAlign: "center",
+    fontFamily: "IBMPlexSansThai_500Medium",
   },
 });
