@@ -16,7 +16,7 @@ export default function Page() {
   const menuItems = [
     { label: "เลื่อนนัด", icon: "calendar-outline", path: "/(tab)/reSchedule", needDisease: true },
     { label: "ข้อมูลผู้ป่วย", icon: "person-outline", path: "/(tab)/patientData" },
-    { label: "การรักษา", icon: "medkit-outline", path: "/(tab)/home", needDisease: true },
+    { label: "การรักษา", icon: "medkit-outline", path: "/(tab)/medicalHis", needDisease: true },
     { label: "ขอเอกสาร", icon: "cloud-download-outline", path: "/(tab)/document" },
     { label: "แจ้งเตือน", icon: "notifications-outline", path: "/(tab)/notification" },
     { label: "คู่มือการใช้งาน", icon: "settings-outline", path: "/(tab)/guide" },
@@ -25,7 +25,7 @@ export default function Page() {
   type MenuPath = (typeof menuItems)[number]["path"];
 
   const handleMenuPress = (path: MenuPath) => {
-    const needDisease = ["/(tab)/reSchedule", "/(tab)/home"];
+    const needDisease = ["/(tab)/reSchedule", "/(tab)/medicalHis"];
 
     if (needDisease.includes(path)) {
       setTargetPath(path);
