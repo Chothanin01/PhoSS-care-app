@@ -1,3 +1,5 @@
+import { api } from "@/services/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -16,37 +18,68 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [citizenError, setCitizenError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword] = useState(false);
   const [focusField, setFocusField] = useState<
     "citizen" | "password" | null
   >(null);
+
   const validateCitizenId = (id: string) => /^\d{13}$/.test(id);
-  const handleLogin = () => {
+  const handleLogin = async () => {
     let valid = true;
 
     setCitizenError("");
     setPasswordError("");
 
-    const isCitizenInvalid = !validateCitizenId(citizenId);
-
-    if (isCitizenInvalid) {
+    if (!validateCitizenId(citizenId)) {
       setCitizenError("เลขบัตรประชาชนต้องเป็นตัวเลข 13 หลัก");
       valid = false;
     }
+
+    if (!password) {
+      setPasswordError("กรุณากรอกรหัสผ่าน");
+      valid = false;
+    }
+
     if (!valid) return;
 
-    //mock login
-    if (citizenId !== "1234567890123") {
-      setCitizenError("ไม่พบเลขบัตรประชาชน");
-      return;
-    }
+    try {
+      await AsyncStorage.removeItem("token");
 
-    if (password !== "1234") {
-      setPasswordError("รหัสผ่านไม่ถูกต้อง");
-      return;
-    }
-    router.replace("/home");
+      console.log("LOGIN INPUT:", citizenId);
 
+      const res = await api.post("/v1/auth/patient/login", {
+        username: citizenId.trim(),
+        password: password.trim(),
+      });
+
+      console.log("LOGIN SUCCESS:", res.data);
+
+      const { token } = res.data;
+
+      await AsyncStorage.setItem("token", token);
+      const savedToken = await AsyncStorage.getItem("token");
+      console.log("TOKEN SAVED:", savedToken);
+
+      router.replace("/home");
+
+    } catch (err: any) {
+      console.log("ERROR:", err);
+      console.log("ERROR RESPONSE:", err.response?.data);
+
+      if (err.response) {
+        const message = err.response.data?.message;
+
+        if (message === "USER_NOT_FOUND") {
+          setCitizenError("ไม่พบผู้ใช้");
+        } else if (message === "INVALID_PASSWORD") {
+          setPasswordError("รหัสผ่านไม่ถูกต้อง");
+        } else {
+          alert(message || "เกิดข้อผิดพลาด");
+        }
+      } else {
+        alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์");
+      }
+    }
   };
 
   return (
@@ -59,7 +92,7 @@ export default function LoginScreen() {
       <Text style={styles.title}>โรงพยาบาลโพธิ์ศรีสุวรรณ</Text>
       <View style={styles.card}>
         <Text style={styles.cardTitle}>เข้าสู่ระบบ</Text>
-        <Text style={styles.label}>เลขบัตรประชาชน</Text>
+        <Text style={styles.label}>Username (เลขบัตรประชาชน)</Text>
         <View
           style={[
             styles.inputWrapper,
@@ -76,24 +109,21 @@ export default function LoginScreen() {
             keyboardType="numeric"
             onFocus={() => setFocusField("citizen")}
             onBlur={() => setFocusField(null)}
-            underlineColorAndroid="transparent"
           />
         </View>
         {citizenError !== "" && (
           <Text style={styles.errorText}>{citizenError}</Text>
         )}
-
         <Text style={styles.label}>รหัสผ่าน</Text>
         <View
           style={[
             styles.inputWrapper,
-            styles.passwordWrapper,
             focusField === "password" && styles.focusBorder,
             passwordError && styles.errorBorder,
           ]}
         >
           <TextInput
-            style={styles.inputPassword}
+            style={styles.input}
             placeholder="กรุณากรอกรหัสผ่าน"
             placeholderTextColor="rgba(0,0,0,0.4)"
             secureTextEntry={!showPassword}
@@ -101,13 +131,12 @@ export default function LoginScreen() {
             onChangeText={setPassword}
             onFocus={() => setFocusField("password")}
             onBlur={() => setFocusField(null)}
-            underlineColorAndroid="transparent"
           />
-    
         </View>
         {passwordError !== "" && (
           <Text style={styles.errorText}>{passwordError}</Text>
         )}
+
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>เข้าสู่ระบบ</Text>
         </TouchableOpacity>
