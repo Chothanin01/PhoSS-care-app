@@ -11,6 +11,7 @@ export const appointments = [
     location: "อาคาร A ชั้น 1",
     doctor: "นายแพทย์ทองดี ทองสุข",
     createBy: "นางจิต จงใจดี",
+    status: "กำลังพิจารณา",
     appointmentDate: "4 พฤศจิกายน 2568"
   },
   {
@@ -25,6 +26,7 @@ export const appointments = [
     location: "อาคาร B",
     doctor: "หมอ B",
     createBy: "นางจิต จงใจดี",
+    status: "กำลังพิจารณา",
     appointmentDate: "4 พฤศจิกายน 2568"
   },
 ];

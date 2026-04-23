@@ -1,4 +1,4 @@
-import { Pressable, Text, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 type ButtonType = "primary" | "secondary" | "danger";
 
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   },
 
   danger: {
-    backgroundColor: "#EF4444",
+    backgroundColor: "#FB4C4C",
   },
 
   text: {
