@@ -5,6 +5,7 @@ import { useState } from "react";
 import GridMenu from "@/components/home/gridMenu";
 import DiseaseModal from "@/components/home/diseaseModal";
 import { router } from "expo-router";
+import { hasUnread } from "@/data/notification";
 
 export default function Page() {
 
@@ -13,6 +14,8 @@ export default function Page() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedDisease, setSelectedDisease] = useState<string | null>(null);
   const [targetPath, setTargetPath] = useState<MenuPath | null>(null);
+  const notificationCount = hasUnread() ? 1 : 0;
+  
   const menuItems = [
     { label: "เลื่อนนัด", icon: "calendar-outline", path: "/(tab)/reSchedule", needDisease: true },
     { label: "ข้อมูลผู้ป่วย", icon: "person-outline", path: "/(tab)/patientData" },
@@ -95,7 +98,11 @@ export default function Page() {
         </View>
 
         {/* Grid Menu */}
-        <GridMenu items={menuItems} onPressItem={handleMenuPress} />
+        <GridMenu
+          items={menuItems}
+          onPressItem={handleMenuPress}
+          notificationCount={notificationCount}
+        />
 
       </ScrollView>
 
