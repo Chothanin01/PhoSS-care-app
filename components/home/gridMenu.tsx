@@ -11,9 +11,10 @@ type MenuItem = {
 type Props = {
   items: readonly MenuItem[];
   onPressItem: (path: MenuPath) => void;
+  notificationCount?: number;
 };
 
-export default function GridMenu({ items, onPressItem }: Props) {
+export default function GridMenu({ items, onPressItem, notificationCount = 0 }: Props) {
   return (
     <View style={styles.grid}>
       {items.map((item, index) => (
@@ -22,7 +23,12 @@ export default function GridMenu({ items, onPressItem }: Props) {
           style={styles.box}
           onPress={() => onPressItem(item.path)}
         >
-          <Ionicons name={item.icon} size={28} color="#05548D" />
+          <View>
+            <Ionicons name={item.icon} size={28} color="#05548D" />
+            {item.path === "/(tab)/notification" && notificationCount > 0 && (
+              <View style={styles.redDot} />
+            )}
+          </View>
           <Text style={styles.boxText}>
             {item.label}
           </Text>
@@ -52,5 +58,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: "center",
     fontFamily: "IBMPlexSansThai_600SemiBold",
+  },
+  redDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "red",
+    position: "absolute",
+    top: -2,
+    right: 2,
   },
 });
