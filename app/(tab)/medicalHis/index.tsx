@@ -103,9 +103,8 @@ export default function MedicalHisPage() {
           <View style={styles.backWrapper}>
             <BackButton targetPath={`/(tab)/home`} />
           </View>
-          <Text style={styles.title}>รายการประวัติการรักษา</Text>
-          <Text style={styles.subTitle}>
-            {disease || "ไม่พบข้อมูลโรค"}
+          <Text style={styles.title}>
+            {isVaccine ? "วัคซีน" : disease || "ไม่พบข้อมูลโรค"}
           </Text>
         </View>
 
@@ -251,7 +250,7 @@ export default function MedicalHisPage() {
               ]}
             >
               <View style={styles.buttonContent}>
-                <Text style={styles.navText}>นัดถัดไป</Text>
+                <Text style={styles.navText}>ต่อไป</Text>
                 <Ionicons name="caret-forward-outline" size={22} color="#05548D" />
               </View>
             </TouchableOpacity>
@@ -288,8 +287,8 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 22,
-    fontFamily: "IBMPlexSansThai_700Bold",
+    fontSize: 24,
+    fontFamily: "IBMPlexSansThai_600Semibold",
   },
 
   subTitle: {
@@ -356,6 +355,7 @@ const styles = StyleSheet.create({
   },
 
   dropdown: {
+    alignSelf: "flex-start",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -394,8 +394,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "IBMPlexSansThai_500Medium",
   },
-  arrowButton: { 
-    marginLeft: 8, 
+  arrowButton: {
+    marginLeft: 8,
   },
 
   pagination: {
