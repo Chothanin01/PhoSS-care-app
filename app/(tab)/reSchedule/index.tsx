@@ -15,7 +15,7 @@ export default function RescheduleScreen() {
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
-  const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   const year = currentDate.getFullYear();
@@ -33,6 +33,7 @@ export default function RescheduleScreen() {
     const newDate = new Date(year, month + diff, 1);
     setCurrentDate(newDate);
     setSelectedDate(null);
+    setSelectedTime(null);
   };
 
   const formatThaiDate = (day: number) => {
@@ -52,14 +53,16 @@ export default function RescheduleScreen() {
   ];
 
   const toggleTime = (time: string) => {
-    if (selectedTimes.includes(time)) {
-      setSelectedTimes(selectedTimes.filter((t) => t !== time));
+    if (selectedTime === time) {
+      setSelectedTime(null);
     } else {
-      setSelectedTimes([...selectedTimes, time]);
+      setSelectedTime(time);
     }
   };
 
-  const isDisabled = !selectedDate || selectedTimes.length === 0;
+  const hasSelectedTime = selectedTime !== null;
+
+  const isDisabled = !selectedDate || !selectedTime;
 
   useEffect(() => {
     if (showModal) {
@@ -79,11 +82,12 @@ export default function RescheduleScreen() {
           <Text style={styles.title}>เลื่อนนัด</Text>
           <View style={{ width: 40 }} />
         </View>
+
         <View style={styles.content}>
           <View style={styles.calendar}>
             <View style={styles.header}>
               <TouchableOpacity onPress={() => changeMonth(-1)}>
-                <Text>{"<"}</Text>
+                <Text style={styles.font}>{"<"}</Text>
               </TouchableOpacity>
 
               <View style={styles.headerCenter}>
@@ -102,7 +106,7 @@ export default function RescheduleScreen() {
               </View>
 
               <TouchableOpacity onPress={() => changeMonth(1)}>
-                <Text>{">"}</Text>
+                <Text style={styles.font}>{">"}</Text>
               </TouchableOpacity>
             </View>
 
@@ -119,7 +123,10 @@ export default function RescheduleScreen() {
                     key={index}
                     style={styles.dayBox}
                     disabled={!day}
-                    onPress={() => day && setSelectedDate(day)}
+                    onPress={() => {
+                      setSelectedDate(day!);
+                      setSelectedTime(null);
+                    }}
                   >
                     <View
                       style={[
@@ -127,7 +134,12 @@ export default function RescheduleScreen() {
                         isSelected && styles.daySelected,
                       ]}
                     >
-                      <Text style={isSelected && { color: "white" }}>
+                      <Text
+                        style={[
+                          styles.font,
+                          isSelected && { color: "white" },
+                        ]}
+                      >
                         {day || ""}
                       </Text>
                     </View>
@@ -136,15 +148,20 @@ export default function RescheduleScreen() {
               })}
             </View>
           </View>
+
           <Text style={styles.sectionTitle}>เลือกช่วงเวลา</Text>
 
           {timeSlots.map((time) => {
-            const selected = selectedTimes.includes(time);
+            const selected = selectedTime === time;
 
             return (
               <TouchableOpacity
                 key={time}
-                style={styles.timeItem}
+                disabled={hasSelectedTime && selectedTime !== time}
+                style={[
+                  styles.timeItem,
+                  hasSelectedTime && selectedTime !== time && styles.timeDisabled,
+                ]}
                 onPress={() => toggleTime(time)}
               >
                 <View style={styles.timeRow}>
@@ -152,18 +169,27 @@ export default function RescheduleScreen() {
                     style={[
                       styles.circle,
                       selected && styles.circleSelected,
+                      hasSelectedTime && selectedTime !== time && styles.circleDisabled,
                     ]}
                   >
                     {selected && (
                       <Ionicons name="checkmark" size={16} color="white" />
                     )}
                   </View>
-                  <Text style={styles.timeText}>{time}</Text>
+                  <Text
+                    style={[
+                      styles.timeText,
+                      hasSelectedTime && selectedTime !== time && styles.textDisabled, 
+                    ]}
+                  >
+                    {time}
+                  </Text>
                 </View>
               </TouchableOpacity>
             );
           })}
         </View>
+
         <TouchableOpacity
           disabled={isDisabled}
           onPress={() => setShowModal(true)}
@@ -181,7 +207,7 @@ export default function RescheduleScreen() {
           <View style={styles.modalBox}>
             <View style={styles.iconOuter}>
               <View style={styles.iconInner}>
-                <Ionicons name="checkmark" size={24} color="white" />
+                <Ionicons name="checkmark" size={32} color="white" />
               </View>
             </View>
 
@@ -202,10 +228,15 @@ export default function RescheduleScreen() {
 
 /* ---------- STYLE ---------- */
 const styles = StyleSheet.create({
+  font: {
+    fontFamily: "IBMPlexSansThai_500Medium",
+  },
+
   container: {
     flex: 1,
     backgroundColor: "#EBF7FF",
   },
+
   wrapper: {
     flex: 1,
     justifyContent: "space-between",
@@ -216,12 +247,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    marginTop: 50,
+    marginTop: 20,
   },
 
   title: {
     fontSize: 24,
-    fontWeight: "600",
+    fontFamily: "IBMPlexSansThai_600Semibold",
   },
 
   content: {
@@ -241,23 +272,24 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
- headerCenter: {
-  flex: 1,
-  flexDirection: "row",         
-  justifyContent: "space-between", 
-  alignItems: "center",
-  marginHorizontal: 12,
-},
+  headerCenter: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginHorizontal: 12,
+  },
 
   monthText: {
-    fontWeight: "bold",
     fontSize: 16,
+    fontFamily: "IBMPlexSansThai_500Medium",
   },
 
   selectedDateText: {
     fontSize: 14,
     color: "#05548D",
     textAlign: "right",
+    fontFamily: "IBMPlexSansThai_500Medium",
   },
 
   grid: {
@@ -269,7 +301,7 @@ const styles = StyleSheet.create({
     width: "14.28%",
     textAlign: "center",
     marginBottom: 5,
-    fontWeight: "bold",
+    fontFamily: "IBMPlexSansThai_500Medium",
   },
 
   dayBox: {
@@ -294,7 +326,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginTop: 20,
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "IBMPlexSansThai_600Semibold",
   },
 
   timeItem: {
@@ -302,6 +334,18 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 14,
     marginTop: 10,
+  },
+
+  timeDisabled: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBCBCB",
+  },
+  circleDisabled: {
+    borderColor: "#CBCBCB",
+  },
+
+  textDisabled: {
+    color: "#CBCBCB",
   },
 
   timeRow: {
@@ -327,6 +371,7 @@ const styles = StyleSheet.create({
 
   timeText: {
     fontSize: 15,
+    fontFamily: "IBMPlexSansThai_500Medium",
   },
 
   button: {
@@ -344,7 +389,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "IBMPlexSansThai_600Semibold",
   },
 
   modalOverlay: {
@@ -364,22 +409,28 @@ const styles = StyleSheet.create({
   },
 
   iconOuter: {
-    backgroundColor: "#DCFCE7",
-    padding: 10,
+    width: 100,
+    height: 100,
     borderRadius: 999,
+    backgroundColor: "#C8E6C9",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 16,
   },
 
   iconInner: {
-    backgroundColor: "#58AD46",
-    padding: 8,
+    width: 70,
+    height: 70,
     borderRadius: 999,
+    backgroundColor: "#4CAF50",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   modalTitle: {
     fontSize: 16,
-    fontWeight: "700",
     textAlign: "center",
+    fontFamily: "IBMPlexSansThai_600Semibold",
   },
 
   modalDesc: {
@@ -387,5 +438,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#6b7280",
     textAlign: "center",
+    fontFamily: "IBMPlexSansThai_500Medium",
   },
 });
