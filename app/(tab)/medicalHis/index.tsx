@@ -1,7 +1,9 @@
 import BackButton from "@/components/backButton";
+import { api } from "@/services/api";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -10,95 +12,163 @@ import {
   View,
 } from "react-native";
 
-/* ------------------ MOCK โรค ------------------ */
-const historyData = [
-  {
-    id: 10,
-    date: "3 ตุลาคม 2568",
-    Note: "ผลตรวจ HbA1c ลดลงและอยู่ในเกณฑ์ที่ดี",
-    status: "สีเขียว",
-    DoctorName: "นางจิต ใจดี",
-    ColorStatus: "#58AD46",
-  },
-  {
-    id: 9,
-    date: "3 กันยายน 2568",
-    Note: "แนะนำให้ปรับพฤติกรรมการรับประทานอาหาร",
-    status: "สีเหลือง",
-    DoctorName: "นางจิต ใจดี",
-    ColorStatus: "#FFD57B",
-  },
-  {
-    id: 8,
-    date: "3 มิถุนายน 2568",
-    Note: "แนะนำให้ปรับพฤติกรรมการรับประทานอาหาร",
-    status: "สีเหลือง",
-    DoctorName: "นางจิต ใจดี",
-    ColorStatus: "#FFD57B",
-  },
-];
-
-/* ------------------ MOCK วัคซีน ------------------ */
-const vaccineData = [
-  {
-    id: 1,
-    vaccineType: "วัคซีนไข้หวัดใหญ่",
-    vaccineName: "Influenza Vaccine",
-    receiveDate: "1 มกราคม 2568",
-    recommendedAge: "6 เดือนขึ้นไป",
-    status: "ได้รับวัคซีนเเล้ว",
-    ColorStatus: "#58AD46",
-  },
-  {
-    id: 2,
-    vaccineType: "วัคซีนโควิด-19",
-    vaccineName: "Pfizer",
-    receiveDate: "10 กุมภาพันธ์ 2568",
-    recommendedAge: "12 ปีขึ้นไป",
-    status: "รอรับวัคซีน",
-    ColorStatus: "#FFD57B",
-  },
-  {
-    id: 3,
-    vaccineType: "วัคซีนตับอักเสบ B",
-    vaccineName: "Hepatitis B",
-    receiveDate: "เลยกำหนด",
-    recommendedAge: "แรกเกิด",
-    status: "ยังไม่ได้รับวัคซีน",
-    ColorStatus: "#FF0505",
-  },
-  {
-    id: 4,
-    vaccineType: "วัคซีนไข้หวัดใหญ่",
-    vaccineName: "Influenza Vaccine",
-    receiveDate: "1 มกราคม 2568",
-    recommendedAge: "6 เดือนขึ้นไป",
-    status: "ได้รับวัคซีนเเล้ว",
-    ColorStatus: "#58AD46",
-  },
-];
-
 export default function MedicalHisPage() {
   const { disease } = useLocalSearchParams<{ disease: string }>();
-  const [page, setPage] = useState(0);
-  const PAGE_SIZE = 10;
   const isVaccine = disease === "วัคซีนเด็ก";
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(1);
   const [filter, setFilter] = useState("ทั้งหมด");
   const [open, setOpen] = useState(false);
+  const [vaccineData, setVaccineData] = useState<any[]>([]);
+  const [historyData, setHistoryData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const formatDateThai = (dateStr: string) => {
+    if (!dateStr || dateStr === "0001-01-01") return "ไม่ระบุวันที่";
+
+    const date = new Date(dateStr);
+
+    const day = date.getDate();
+
+    const months = [
+      "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+      "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+    ];
+
+    const month = months[date.getMonth()];
+    const year = date.getFullYear() + 543;
+
+    return `${day} ${month} ${year}`;
+  };
+  const diseaseMap: Record<string, string> = {
+    โรคเบาหวาน: "77fe42d0-1d68-4e02-9ac0-6914a446ab2a",
+    โรคความดันโลหิตสูง: "58da0327-d979-46cf-ac6c-71ad655d541b",
+    วัณโรค: "56d1cd69-156f-4959-9d1e-7e66a695cfa8",
+  };
+
+  useEffect(() => {
+    if (isVaccine) fetchVaccine(1);
+    else if (disease) fetchHistory();
+  }, [disease]);
+
+  const getToken = async () => {
+    return await AsyncStorage.getItem("token");
+  };
+
+  /* ---------------- VACCINE API ---------------- */
+  const fetchVaccine = async (pageNumber = 1) => {
+    try {
+      setLoading(true);
+      const token = await getToken();
+
+      const res = await api.get("/v1/patient/vaccine", {
+        params: {
+          page: pageNumber,
+          limit: 10,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const { vaccines, total_pages } = res.data.data;
+
+      const formatted = vaccines.map((item: any) => ({
+        id: item.vaccine_id,
+        vaccineType: item.type,
+        vaccineName: item.name,
+        receiveDate: item.vaccinated_date || "ยังไม่กำหนด",
+        recommendedAge: item.age,
+
+        status:
+          item.vaccinated_status === "completed"
+            ? "ได้รับวัคซีนเเล้ว"
+            : item.vaccinated_status === "pending"
+              ? "รอรับวัคซีน"
+              : "ยังไม่ได้รับวัคซีน",
+
+        ColorStatus:
+          item.vaccinated_status === "completed"
+            ? "#58AD46"
+            : item.vaccinated_status === "pending"
+              ? "#FFD57B"
+              : "#FF0505",
+      }));
+
+      setVaccineData(formatted);
+      setTotalPage(total_pages);
+      setPage(pageNumber);
+    } catch (err) {
+      console.log("vaccine error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ---------------- HISTORY API ---------------- */
+  const fetchHistory = async () => {
+    try {
+      setLoading(true);
+
+      const token = await AsyncStorage.getItem("token");
+
+      const diseaseId = diseaseMap[disease || ""];
+      if (!diseaseId) {
+        console.log(" ไม่พบ disease_id:", disease);
+        return;
+      }
+
+      const res = await api.get(
+        `/v1/patient/appointments/history/${diseaseId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const formatted = res.data.data.appointments.map((item: any) => ({
+        id: item.appoint_id,
+        no: item.no,
+        date:
+          item.date === "0001-01-01"
+            ? "ไม่ระบุวันที่"
+            : item.date,
+        Note: item.note || "-",
+
+        status:
+          item.color_status === "green"
+            ? "ปกติ"
+            : item.color_status === "yellow"
+              ? "เฝ้าระวัง"
+              : "อันตราย",
+
+        DoctorName: item.doctor,
+
+        ColorStatus:
+          item.color_status === "green"
+            ? "#58AD46"
+            : item.color_status === "yellow"
+              ? "#FFD57B"
+              : "#FF0505",
+      }));
+
+      setHistoryData(formatted);
+    } catch (error) {
+      console.log("fetch history error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ---------------- FILTER ---------------- */
   const filteredVaccine = vaccineData.filter((item) => {
     if (filter === "ทั้งหมด") return true;
     return item.status === filter;
   });
-  const start = page * PAGE_SIZE;
-  const end = start + PAGE_SIZE;
-  const pageData = filteredVaccine.slice(start, end);
-  const maxPage = Math.ceil(filteredVaccine.length / PAGE_SIZE);
+
   return (
     <View style={styles.wrapper}>
-      <ScrollView
-        style={styles.container}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView style={styles.container}>
         <View style={styles.header}>
           <View style={styles.backWrapper}>
             <BackButton targetPath={`/(tab)/home`} />
@@ -107,9 +177,8 @@ export default function MedicalHisPage() {
             {isVaccine ? "วัคซีน" : disease || "ไม่พบข้อมูลโรค"}
           </Text>
         </View>
-
         {isVaccine && (
-          <View style={{ marginBottom: 12, position: "relative", zIndex: 10 }}>
+          <View style={{ marginBottom: 12, zIndex: 10 }}>
             <TouchableOpacity
               style={styles.dropdown}
               onPress={() => setOpen(!open)}
@@ -137,6 +206,7 @@ export default function MedicalHisPage() {
                     style={styles.dropdownItem}
                     onPress={() => {
                       setFilter(item);
+                      fetchVaccine(1);
                       setOpen(false);
                     }}
                   >
@@ -149,7 +219,7 @@ export default function MedicalHisPage() {
         )}
 
         {isVaccine &&
-          pageData.map((item) => (
+          filteredVaccine.map((item) => (
             <View key={item.id} style={styles.card}>
               <View
                 style={[
@@ -160,6 +230,7 @@ export default function MedicalHisPage() {
               >
                 <Text style={styles.statusText}>{item.status}</Text>
               </View>
+
               <Text style={styles.visitTitle}>{item.vaccineType}</Text>
               <Text style={styles.text}>
                 ชื่อวัคซีน : {item.vaccineName}
@@ -167,10 +238,12 @@ export default function MedicalHisPage() {
               <Text style={styles.text}>
                 อายุที่ควรได้รับ : {item.recommendedAge}
               </Text>
+
               <View style={styles.bottomRow}>
                 <Text style={styles.text}>
                   วันที่ได้รับ : {item.receiveDate}
                 </Text>
+
                 <TouchableOpacity
                   style={styles.arrowButton}
                   onPress={() =>
@@ -180,22 +253,33 @@ export default function MedicalHisPage() {
                         id: String(item.id),
                         disease: String(disease),
                       },
-                    })} >
-                  <Ionicons name="arrow-forward-circle-outline" size={24} color="#05548D" />
+                    })
+                  }
+                >
+                  <Ionicons
+                    name="arrow-forward-circle-outline"
+                    size={24}
+                    color="#05548D"
+                  />
                 </TouchableOpacity>
               </View>
+              
             </View>
           ))}
         {!isVaccine &&
           historyData.map((item) => (
             <View key={item.id} style={styles.card}>
               <View style={styles.rowBetween}>
-                <Text style={styles.visitTitle}>ครั้งที่ {item.id}</Text>
-                <Text style={styles.date}>{item.date}</Text>
+                <Text style={styles.visitTitle}>
+                  ครั้งที่ {item.no}
+                </Text>
+                <Text style={styles.date}>{formatDateThai(item.date)}</Text>
               </View>
+
               <Text style={styles.text}>
                 การรักษา : {item.Note}
               </Text>
+
               <View style={styles.statusRow}>
                 <Text style={styles.text}>สถานะ : </Text>
                 <View
@@ -207,8 +291,12 @@ export default function MedicalHisPage() {
                   <Text style={styles.statusText}>{item.status}</Text>
                 </View>
               </View>
+
               <View style={styles.bottomRow}>
-                <Text style={styles.text}> ผู้ตรวจ : {item.DoctorName} </Text>
+                <Text style={styles.text}>
+                  ผู้ตรวจ : {item.DoctorName}
+                </Text>
+
                 <TouchableOpacity
                   style={styles.arrowButton}
                   onPress={() =>
@@ -218,18 +306,23 @@ export default function MedicalHisPage() {
                         id: String(item.id),
                         disease: String(disease),
                       },
-                    })} >
-                  <Ionicons name="arrow-forward-circle-outline" size={24} color="#05548D" />
+                    })
+                  }
+                >
+                  <Ionicons
+                    name="arrow-forward-circle-outline"
+                    size={24}
+                    color="#05548D"
+                  />
                 </TouchableOpacity>
               </View>
             </View>
           ))}
-        {isVaccine && (
           <View style={styles.pagination}>
             <TouchableOpacity
-              disabled={page === 0}
-              onPress={() => setPage(page - 1)}
-              style={[styles.pageButton, page === 0 && { opacity: 0.4 }]}
+              disabled={page === 1}
+              onPress={() => fetchVaccine(page - 1)}
+              style={[styles.pageButton, page === 1 && { opacity: 0.4 }]}
             >
               <View style={styles.buttonContent}>
                 <Ionicons name="caret-back-outline" size={22} color="#05548D" />
@@ -238,24 +331,24 @@ export default function MedicalHisPage() {
             </TouchableOpacity>
 
             <Text style={styles.text}>
-              {page + 1} / {maxPage}
+              {page} / {totalPage}
             </Text>
 
             <TouchableOpacity
-              disabled={page + 1 >= maxPage}
-              onPress={() => setPage(page + 1)}
+              disabled={page >= totalPage}
+              onPress={() => fetchVaccine(page + 1)}
               style={[
                 styles.pageButton,
-                page + 1 >= maxPage && { opacity: 0.4 },
+                page >= totalPage && { opacity: 0.4 },
               ]}
             >
               <View style={styles.buttonContent}>
                 <Text style={styles.navText}>ต่อไป</Text>
                 <Ionicons name="caret-forward-outline" size={22} color="#05548D" />
               </View>
+
             </TouchableOpacity>
           </View>
-        )}
       </ScrollView>
     </View>
   );
@@ -345,6 +438,7 @@ const styles = StyleSheet.create({
 
   statusText: {
     color: "#fff",
+    fontFamily: "IBMPlexSansThai_500Medium",
   },
 
   bottomRow: {

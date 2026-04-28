@@ -1,6 +1,9 @@
 import BackButton from "@/components/backButton";
+import { api } from "@/services/api";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -9,156 +12,165 @@ import {
   View,
 } from "react-native";
 
-/* ------------------ MOCK  โรค ------------------ */
-const historyData = [
-  {
-    id: 10,
-    no: 10,
-    date: "3 ตุลาคม 2568",
-    doctor: "นางจิต ใจดี",
-    disease: "โรคเบาหวาน",
-    treatment: "HbA1c ดีขึ้น อยู่ในเกณฑ์ควบคุมได้",
-    pulse: "83",
-    weight: "50",
-    pressure: "91/53",
-    height: "179",
-    bmi: "22.8",
-    symptom: "ปกติ",
-    sugar: "126",
-    status: "สีเขียว",
-    statusColor: "#58AD46",
-  },
-  {
-    id: 9,
-    no: 9,
-    date: "3 กันยายน 2568",
-    doctor: "นางจิต ใจดี",
-    disease: "โรคเบาหวาน",
-    treatment: "HbA1c ดีขึ้น อยู่ในเกณฑ์ควบคุมได้",
-    pulse: "83",
-    weight: "50",
-    pressure: "91/53",
-    height: "179",
-    bmi: "22.8",
-    symptom: "ปกติ",
-    sugar: "126",
-    status: "สีเหลือง",
-    statusColor: "#FFD57B",
-  },
-  {
-    id: 8,
-    no: 8,
-    date: "3 มิถุนายน 2568",
-    doctor: "นางจิต ใจดี",
-    disease: "โรคเบาหวาน",
-    treatment: "HbA1c ดีขึ้น อยู่ในเกณฑ์ควบคุมได้",
-    pulse: "83",
-    weight: "50",
-    pressure: "91/53",
-    height: "179",
-    bmi: "22.8",
-    symptom: "ปกติ",
-    sugar: "126",
-    status: "สีเเดง",
-    statusColor: "#FF0505",
-  },
-];
-
-/* ------------------ MOCK วัคซีน ------------------ */
-const vaccineData = [
-  {
-    id: 1,
-    vaccineType: "วัคซีน BCG",
-    vaccineName: "ป้องกันวัณโรค",
-    recommendedAge: "แรกเกิด",
-    receiveDate: "1 ม.ค. 2568",
-    status: "ได้รับวัคซีนเเล้ว",
-    statusColor: "#58AD46",
-    sideEffect: "อาจมีตุ่มหนองเล็กน้อย",
-    recommendation: "หลีกเลี่ยงการเกา",
-  },
-  {
-    id: 2,
-    vaccineType: "วัคซีน DTP",
-    vaccineName: "คอตีบ-บาดทะยัก-ไอกรน",
-    recommendedAge: "2 เดือน",
-    receiveDate: "ยังไม่ได้รับ",
-    status: "รอรับวัคซีน",
-    statusColor: "#FFD57B",
-    sideEffect: "มีไข้ต่ำ ปวดบริเวณฉีด",
-    recommendation: "เช็ดตัวลดไข้",
-  },
-  {
-    id: 3,
-    vaccineType: "วัคซีน OTP",
-    vaccineName: "คอตีบ-บาดทะยัก-ไอกรน",
-    recommendedAge: "2 เดือน",
-    receiveDate: "ยังไม่ได้รับ",
-    status: "ยังไม่ได้รับวัคซีน",
-    statusColor: "#FF0505",
-    sideEffect: "มีไข้ต่ำ ปวดบริเวณฉีด",
-    recommendation: "เช็ดตัวลดไข้",
-  },
-];
-
 export default function MedicalHistoryDetailPage() {
   const { id, disease } = useLocalSearchParams<{
     id: string;
     disease: string;
   }>();
-
   const isVaccine = disease?.includes("วัคซีน");
+  const formatDateThai = (dateStr: string) => {
+    if (!dateStr || dateStr === "0001-01-01") return "ไม่ระบุวันที่";
 
-  const medicalItem = historyData.find(
-    (item) => item.id === Number(id)
-  );
-  const vaccineItem = vaccineData.find(
-    (item) => item.id === Number(id)
-  );
-  const currentItem = isVaccine ? vaccineItem : medicalItem;
+    const date = new Date(dateStr);
 
-  if (!currentItem) {
-    return (
-      <View style={styles.wrapper}>
-        <Text>ไม่พบข้อมูล</Text>
-      </View>
-    );
-  }
-  const dataList = historyData; 
-  const currentIndex = dataList.findIndex(
-    (item) => item.id === Number(id)
-  );
-  const previousItem =
-    currentIndex >= 0 ? dataList[currentIndex + 1] : undefined;
-  const nextItem =
-    currentIndex >= 0 ? dataList[currentIndex - 1] : undefined;
+    const day = date.getDate();
+
+    const months = [
+      "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+      "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+    ];
+
+    const month = months[date.getMonth()];
+    const year = date.getFullYear() + 543;
+
+    return `${day} ${month} ${year}`;
+  };
+
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const getToken = async () => {
+    return await AsyncStorage.getItem("token");
+  };
+
+  useEffect(() => {
+    if (!id) return;
+
+    if (isVaccine) {
+      fetchVaccineDetail(id);
+    } else {
+      fetchMedicalDetail(id);
+    }
+  }, [id]);
+  const fetchVaccineDetail = async (vaccineId: string) => {
+    try {
+      setLoading(true);
+      const token = await getToken();
+
+      const res = await api.get(`/v1/patient/vaccine/${vaccineId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const item = res.data.data;
+
+      setData({
+        id: item.id,
+        vaccineType: item.type,
+        vaccineName: item.name,
+        recommendedAge: item.age,
+        receiveDate: item.vaccinated_date || "ยังไม่ได้รับ",
+        sideEffect: item.effect,
+        recommendation: item.note,
+
+        status:
+          item.vaccinated_status === "completed"
+            ? "ได้รับวัคซีนเเล้ว"
+            : item.vaccinated_status === "pending"
+              ? "รอรับวัคซีน"
+              : "ยังไม่ได้รับวัคซีน",
+
+        statusColor:
+          item.vaccinated_status === "completed"
+            ? "#58AD46"
+            : item.vaccinated_status === "pending"
+              ? "#FFD57B"
+              : "#FF0505",
+      });
+    } catch (err) {
+      console.log("vaccine detail error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const fetchMedicalDetail = async (appointId: string) => {
+    try {
+      setLoading(true);
+      const token = await getToken();
+
+      const res = await api.get(
+        `/v1/patient/appointments/history/detail/${appointId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const item = res.data.data;
+
+      setData({
+        id: item.appoint_id,
+        no: item.no,
+        date:
+          item.date === "0001-01-01"
+            ? "ไม่ระบุวันที่"
+            : item.date,
+        doctor: item.doctor,
+        treatment: item.note || "-",
+        purpose: item.purpose,
+        symptom: item.symptom || "-",
+
+        pulse: item.health?.pulse || "-",
+        pressure: item.health?.pressure || "-",
+        height: item.health?.height || "-",
+        weight: item.health?.weight || "-",
+        bmi: item.health?.bmi || "-",
+        nextId: item.next_appoint_id,
+        prevId: item.prev_appoint_id,
+      });
+    } catch (err) {
+      console.log("medical detail error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
   const goToPrevious = () => {
-    if (!previousItem) return;
+    if (!data?.prevId) return;
 
     router.push({
       pathname: "/(tab)/medicalHis/detail/[id]",
       params: {
-        id: String(previousItem.id),
+        id: data.prevId,
         disease: String(disease ?? ""),
       },
     });
   };
 
   const goToNext = () => {
-    if (!nextItem) return;
+    if (!data?.nextId) return;
 
     router.push({
       pathname: "/(tab)/medicalHis/detail/[id]",
       params: {
-        id: String(nextItem.id),
+        id: data.nextId,
         disease: String(disease ?? ""),
       },
     });
   };
 
+  if (loading || !data) {
+    return (
+      <View style={styles.wrapper}>
+        <Text style={{ textAlign: "center" }}>กำลังโหลด...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.wrapper}>
       <ScrollView style={styles.container}>
+        {/* HEADER */}
         <View style={styles.header}>
           <View style={styles.backWrapper}>
             <BackButton
@@ -169,51 +181,48 @@ export default function MedicalHistoryDetailPage() {
             {isVaccine ? "รายละเอียดวัคซีน" : "ประวัติการรักษา"}
           </Text>
         </View>
+
+        {/* VACCINE */}
         {isVaccine ? (
-          <>
-            <View style={styles.card}>
-              <View
-                style={[
-                  styles.statusBadge,
-                  styles.statusTopRight,
-                  { backgroundColor: vaccineItem!.statusColor },
-                ]}
-              >
-                <Text style={styles.statusText}>
-                  {vaccineItem!.status}
-                </Text>
-              </View>
-              <Text style={styles.cardTitle}>
-                {vaccineItem!.vaccineType}
-              </Text>
-              <Text style={styles.text}>
-                ชื่อวัคซีน : {vaccineItem!.vaccineName}
-              </Text>
-              <Text style={styles.text}>
-                อายุที่ควรได้รับ : {vaccineItem!.recommendedAge}
-              </Text>
-              <Text style={styles.text}>
-                วันที่ได้รับ : {vaccineItem!.receiveDate}
-              </Text>
-              <Text style={styles.text}>
-                ผลข้างเคียง : {vaccineItem!.sideEffect}
-              </Text>
-              <Text style={styles.text}>
-                คำแนะนำ : {vaccineItem!.recommendation}
-              </Text>
+          <View style={styles.card}>
+            <View
+              style={[
+                styles.statusBadge,
+                styles.statusTopRight,
+                { backgroundColor: data.statusColor },
+              ]}
+            >
+              <Text style={styles.statusText}>{data.status}</Text>
             </View>
-          </>
+
+            <Text style={styles.cardTitle}>{data.vaccineType}</Text>
+            <Text style={styles.text}>
+              ชื่อวัคซีน : {data.vaccineName}
+            </Text>
+            <Text style={styles.text}>
+              อายุที่ควรได้รับ : {data.recommendedAge}
+            </Text>
+            <Text style={styles.text}>
+              วันที่ได้รับ : {data.receiveDate}
+            </Text>
+            <Text style={styles.text}>
+              ผลข้างเคียง : {data.sideEffect}
+            </Text>
+            <Text style={styles.text}>
+              คำแนะนำ : {data.recommendation}
+            </Text>
+          </View>
         ) : (
           <>
             <View style={styles.card}>
               <Text style={styles.cardTitle}>
-                ครั้งที่ {medicalItem!.no}
+                ครั้งที่ {data.no}
               </Text>
               <Text style={styles.text}>
-                วันที่ตรวจ : {medicalItem!.date}
+                วันที่ตรวจ : {formatDateThai(data.date)}
               </Text>
               <Text style={styles.text}>
-                ผู้ตรวจ : {medicalItem!.doctor}
+                ผู้ตรวจ : {data.doctor}
               </Text>
             </View>
             <View style={styles.card}>
@@ -221,41 +230,40 @@ export default function MedicalHistoryDetailPage() {
                 ตรวจร่างกายทั่วไป
               </Text>
               <Text style={styles.text}>
-                ชีพจร : {medicalItem!.pulse} ครั้ง/นาที   น้ำหนัก : {medicalItem!.weight} กก.
+                ชีพจร : {data.pulse}  ครั้ง/นาที         น้ำหนัก : {data.weight} กก.
               </Text>
               <Text style={styles.text}>
-                ความดัน : {medicalItem!.pressure}
+                ความดัน : {data.pressure} มม./ปรอท
               </Text>
               <Text style={styles.text}>
-                ความสูง : {medicalItem!.height}
+                ส่วนสูง : {data.height} ซม.
               </Text>
               <Text style={styles.text}>
-                BMI : {medicalItem!.bmi}
+                ดัชนีมวลกาย : {data.bmi} กก./ม²
               </Text>
             </View>
             <View style={styles.card}>
               <Text style={styles.cardTitle}>การรักษา</Text>
-              <Text style={styles.text}>
-                {medicalItem!.treatment}
+              <Text style={styles.text}>{data.purpose}
               </Text>
             </View>
             <View style={styles.card}>
               <Text style={styles.text}>
-                อาการ : {medicalItem!.symptom}
+                อาการ : {data.symptom}
               </Text>
               <Text style={styles.text}>
-                น้ำตาล : {medicalItem!.sugar}
+                ระดับน้ำตาล : มก./ดล.
               </Text>
               <View style={styles.statusRow}>
                 <Text style={styles.text}>สถานะ : </Text>
                 <View
                   style={[
                     styles.statusBadge,
-                    { backgroundColor: medicalItem!.statusColor },
+                    { backgroundColor: data.statusColor },
                   ]}
                 >
                   <Text style={styles.statusText}>
-                    {medicalItem!.status}
+                    {data.status}
                   </Text>
                 </View>
               </View>
@@ -263,12 +271,14 @@ export default function MedicalHistoryDetailPage() {
           </>
         )}
       </ScrollView>
-
       {!isVaccine && (
         <View style={styles.bottomButton}>
           <TouchableOpacity
-            style={[styles.navButton, !previousItem && styles.disabledButton]}
-            disabled={!previousItem}
+            style={[
+              styles.navButton,
+              !data.prevId && styles.disabledButton,
+            ]}
+            disabled={!data.prevId}
             onPress={goToPrevious}
           >
             <View style={styles.buttonContent}>
@@ -278,8 +288,11 @@ export default function MedicalHistoryDetailPage() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.navButton, !nextItem && styles.disabledButton]}
-            disabled={!nextItem}
+            style={[
+              styles.navButton,
+              !data.nextId && styles.disabledButton,
+            ]}
+            disabled={!data.nextId}
             onPress={goToNext}
           >
             <View style={styles.buttonContent}>
@@ -292,7 +305,6 @@ export default function MedicalHistoryDetailPage() {
     </View>
   );
 }
-
 /* ------------------ STYLE ------------------ */
 const styles = StyleSheet.create({
   wrapper: { flex: 1, backgroundColor: "#EBF7FF" },
@@ -334,7 +346,7 @@ const styles = StyleSheet.create({
   },
 
   text: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: "IBMPlexSansThai_500Medium",
     marginBottom: 6,
   },
@@ -391,6 +403,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6, 
+    gap: 6,
   },
 });
