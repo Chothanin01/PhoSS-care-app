@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 16,
     textAlign: "center",
-    fontFamily: "IBMPlexSansThai_500Semibold",
+    fontFamily: "IBMPlexSansThai_600Semibold",
   },
 
   modalDesc: {

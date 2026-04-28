@@ -124,7 +124,7 @@ export default function AppointmentDetail() {
 
             <View style={styles.iconOuter}>
               <View style={styles.iconInner}>
-                <Ionicons name="close" size={24} color="white" />
+                <Ionicons name="close" size={32} color="white" />
               </View>
             </View>
 
@@ -248,19 +248,19 @@ const styles = StyleSheet.create({
   },
 
   iconOuter: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 100,
+    height: 100,
+    borderRadius: 999,
     backgroundColor: "#FEE2E2",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 16,
   },
 
   iconInner: {
-    width: 45,
-    height: 45,
-    borderRadius: 22,
+    width: 70,
+    height: 70,
+    borderRadius: 999,
     backgroundColor: "#FB4C4C",
     justifyContent: "center",
     alignItems: "center",
