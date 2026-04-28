@@ -120,12 +120,12 @@ export default function MedicalHistoryDetailPage() {
         treatment: item.note || "-",
         purpose: item.purpose,
         symptom: item.symptom || "-",
-
         pulse: item.health?.pulse || "-",
         pressure: item.health?.pressure || "-",
         height: item.health?.height || "-",
         weight: item.health?.weight || "-",
         bmi: item.health?.bmi || "-",
+        sugar: item.health?.sugar || "-",
         nextId: item.next_appoint_id,
         prevId: item.prev_appoint_id,
       });
@@ -159,18 +159,9 @@ export default function MedicalHistoryDetailPage() {
     });
   };
 
-  if (loading || !data) {
-    return (
-      <View style={styles.wrapper}>
-        <Text style={{ textAlign: "center" }}>กำลังโหลด...</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.wrapper}>
       <ScrollView style={styles.container}>
-        {/* HEADER */}
         <View style={styles.header}>
           <View style={styles.backWrapper}>
             <BackButton
@@ -181,8 +172,6 @@ export default function MedicalHistoryDetailPage() {
             {isVaccine ? "รายละเอียดวัคซีน" : "ประวัติการรักษา"}
           </Text>
         </View>
-
-        {/* VACCINE */}
         {isVaccine ? (
           <View style={styles.card}>
             <View
@@ -252,7 +241,7 @@ export default function MedicalHistoryDetailPage() {
                 อาการ : {data.symptom}
               </Text>
               <Text style={styles.text}>
-                ระดับน้ำตาล : มก./ดล.
+                ระดับน้ำตาล : {data.sugar} มก./ดล.
               </Text>
               <View style={styles.statusRow}>
                 <Text style={styles.text}>สถานะ : </Text>
