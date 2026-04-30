@@ -12,12 +12,12 @@ type DocItem = {
   type: string;
   disease_id?: string;
   status: StatusType;
+  disabled: boolean; 
 };
 
 export default function DocumentRequestScreen() {
   const [documents, setDocuments] = useState<DocItem[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
-
   const fetchDocuments = async () => {
     try {
       const res = await api.get("/v1/patient/requests");
@@ -30,6 +30,7 @@ export default function DocumentRequestScreen() {
             type: item.type,
             disease_id: item.disease_id,
             status: "idle",
+            disabled: item.disabled, 
           }));
 
         setDocuments(mapped);
@@ -47,7 +48,7 @@ export default function DocumentRequestScreen() {
     if (showSuccess) {
       const timer = setTimeout(() => {
         setShowSuccess(false);
-        router.replace("/home"); 
+        router.replace("/home");
       }, 3000);
 
       return () => clearTimeout(timer);
@@ -59,6 +60,8 @@ export default function DocumentRequestScreen() {
       prev.map((doc) => {
         if (doc.name !== item) return doc;
 
+        if (doc.disabled) return doc;
+
         return {
           ...doc,
           status: doc.status === "selected" ? "idle" : "selected",
@@ -67,22 +70,28 @@ export default function DocumentRequestScreen() {
     );
   };
 
-  const isAllSelected = documents.every(
-    (doc) => doc.status === "selected"
-  );
+  const selectableDocs = documents.filter((doc) => !doc.disabled);
+
+  const isAllSelected =
+    selectableDocs.length > 0 &&
+    selectableDocs.every((doc) => doc.status === "selected");
 
   const toggleSelectAll = () => {
     setDocuments((prev) =>
-      prev.map((doc) => ({
-        ...doc,
-        status: isAllSelected ? "idle" : "selected",
-      }))
+      prev.map((doc) => {
+        if (doc.disabled) return doc; 
+
+        return {
+          ...doc,
+          status: isAllSelected ? "idle" : "selected",
+        };
+      })
     );
   };
 
   const handleRequest = async () => {
     const selectedDocs = documents.filter(
-      (doc) => doc.status === "selected"
+      (doc) => doc.status === "selected" && !doc.disabled 
     );
 
     if (selectedDocs.length === 0) return;
@@ -112,14 +121,16 @@ export default function DocumentRequestScreen() {
           document_types: documentTypes,
         });
       }
+
       requestsPayload.push(...medicalRequests);
+
       const finalPayload = {
         requests: requestsPayload,
       };
 
       await api.post("/v1/patient/requests", finalPayload);
 
-      setShowSuccess(true); 
+      setShowSuccess(true);
     } catch (error) {
       console.log("request error:", error);
     }
@@ -150,30 +161,38 @@ export default function DocumentRequestScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
         {documents.map((item) => {
           const isSelected = item.status === "selected";
-
           return (
             <TouchableOpacity
               key={item.name}
               style={[
                 styles.option,
                 isSelected && styles.optionActive,
+                item.disabled && styles.optionDisabled, 
               ]}
               onPress={() => toggleItem(item.name)}
+              disabled={item.disabled} // ✅
             >
               <View
                 style={[
                   styles.radio,
                   isSelected && styles.radioActive,
+                  item.disabled && styles.radioDisabled, 
                 ]}
               >
-                {isSelected && (
+                {isSelected && !item.disabled && (
                   <Text style={styles.check}>✓</Text>
                 )}
               </View>
 
-              <Text style={styles.optionText}>
+              <Text
+                style={[
+                  styles.optionText,
+                  item.disabled && styles.textDisabled,
+                ]}
+              >
                 {item.name}
               </Text>
             </TouchableOpacity>
@@ -189,7 +208,6 @@ export default function DocumentRequestScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-
       {showSuccess && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
@@ -264,7 +282,7 @@ const styles = StyleSheet.create({
   selectAllText: {
     marginLeft: 6,
     fontSize: 12,
-    fontFamily: "IBMPlexSansThai_500Medium", 
+    fontFamily: "IBMPlexSansThai_500Medium",
   },
 
   checkbox: {
@@ -391,5 +409,18 @@ const styles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
     fontFamily: "IBMPlexSansThai_500Medium",
+  },
+  optionDisabled: {
+    backgroundColor: "#F5F5F5",
+    borderColor: "#DDD",
+  },
+
+  radioDisabled: {
+    borderColor: "#CCC",
+    backgroundColor: "#EEE",
+  },
+
+  textDisabled: {
+    color: "#AAA",
   },
 });
