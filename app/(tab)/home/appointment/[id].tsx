@@ -22,8 +22,11 @@ type AppointmentDetailData = {
   age_months: number;
   age_days: number;
   date: string;
+  delay_date: string;
   start_time: string;
   end_time: string;
+  delay_end_time: string;
+  delay_start_time: string;
   purpose: string;
   disease_name: string;
   place: string;
@@ -236,9 +239,20 @@ export default function AppointmentDetail() {
           {/* Appointment Detail Card */}
           <View style={[styles.card, styles.cardShadow]}>
             <View style={styles.rowBetween}>
-              <Text style={styles.titleLarge}>
-                วันที่นัด {formatThaiDate(appointment.date)}
-              </Text>
+              {status === "delay" ? (
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Text style={styles.oldDateAndTime}>
+                    {formatThaiDate(appointment.date)}
+                  </Text>
+                  <Text style={styles.newDateAndTime}>
+                    {"  "} {formatThaiDate(appointment.delay_date)}
+                  </Text>
+                </View>
+              ) : (
+                <Text style={styles.titleLarge}>
+                  วันที่นัด {formatThaiDate(appointment.date)}
+                </Text>
+              )}
               {status !== "ongoing" && (
                 <View
                   style={[
@@ -258,10 +272,20 @@ export default function AppointmentDetail() {
               )}
             </View>
 
-            <Text style={styles.textMedium}>
-              เวลา : {appointment.start_time} -{" "}
-              {appointment.end_time} น.
-            </Text>
+            {status === "delay" ? (
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={styles.oldDateAndTime}>
+                  {appointment.start_time} - {appointment.end_time} น.
+                </Text>
+                <Text style={styles.newDateAndTime}>
+                  {"  "} {appointment.delay_start_time} - {appointment.delay_end_time} น.
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.textMedium}>
+                เวลา : {appointment.start_time} - {appointment.end_time} น.
+              </Text>
+            )}
 
             <Text style={styles.textMedium}>นัดมาเพื่อ : {appointment.purpose}</Text>
             <Text style={styles.textMedium}>โรค : {appointment.disease_name}</Text>
@@ -488,6 +512,20 @@ const styles = StyleSheet.create({
   pendingText: {
     fontSize: 18,
     fontFamily: "IBMPlexSansThai_600SemiBold",
+    color: "#7A7A7A",
+  },
+
+  oldDateAndTime: {
+    fontSize: 14,
+    fontFamily: "IBMPlexSansThai_500Medium",
+    textDecorationLine: "line-through",
+    color: "#000",
+    marginRight: 4,
+  },
+
+  newDateAndTime: {
+    fontSize: 14,
+    fontFamily: "IBMPlexSansThai_500Medium",
     color: "#7A7A7A",
   },
 
