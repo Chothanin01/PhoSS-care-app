@@ -48,7 +48,6 @@ export default function Page() {
   const [targetPath, setTargetPath] = useState<MenuPath | null>(null);
 
   const [patientInfo, setPatientInfo] = useState<PatientData | null>(null);
-  const [loading, setLoading] = useState(true);
 
   const notificationCount = hasUnread() ? 1 : 0;
   const formatThaiDate = (dateString: string) => {
@@ -99,7 +98,6 @@ export default function Page() {
 
   const fetchPatientAppointments = async () => {
     try {
-      setLoading(true);
 
       const token = await AsyncStorage.getItem("token");
 
@@ -118,7 +116,6 @@ export default function Page() {
     } catch (error) {
       console.log("Fetch patient appointments error:", error);
     } finally {
-      setLoading(false);
     }
   };
 
@@ -143,7 +140,7 @@ export default function Page() {
             <View style={styles.underline} />
 
             <Text style={styles.hn}>
-              HN {patientInfo?.hn_number || "Loading..."}
+              HN {patientInfo?.hn_number}
             </Text>
           </View>
         </View>
@@ -161,35 +158,54 @@ export default function Page() {
             }}
             scrollEventThrottle={16}
           >
-            {patientInfo?.appoint?.map((item) => (
+            {!patientInfo?.appoint || patientInfo.appoint.length === 0 ? (
               <View
-                key={item.appoint_id}
                 style={{
-                  width: screenWidth,
-                  paddingHorizontal: 16,
+                  width: screenWidth - 32,
+                  marginHorizontal: 16,
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: 16,
+                  padding: 16,
+                  elevation: 3,
                 }}
               >
-                <AppointmentCard
-                  id={item.disease_id}
-                  key={item.appoint_id}
-                  name={patientInfo.fullname}
-                  age_years={String(patientInfo.age_years)}
-                  age_months={String(patientInfo.age_months)}
-                  age_days={String(patientInfo.age_days)}
-                  date={formatThaiDate(item.date)}
-                  delay_date={formatThaiDate(item.delay_date)}
-                  disease={item.disease_name}
-                  time={`${item.start_time} - ${item.end_time}`}
-                  delay_time={`${item.delay_start_time} - ${item.delay_end_time}`}
-                  department={item.purpose}
-                  location={item.place}
-                  doctor={item.doctor}
-                  index={index}
-                  total={patientInfo.appoint.length}
-                  status={item.status}
-                />
+                <View style={styles.emptyCard}>
+                  <Text style={styles.emptyText}>
+                    คุณยังไม่มีนัดหมาย
+                  </Text>
+                </View>
               </View>
-            ))}
+            ) : (
+              patientInfo.appoint.map((item) => (
+                <View
+                  key={item.appoint_id}
+                  style={{
+                    width: screenWidth,
+                    paddingHorizontal: 16,
+                  }}
+                >
+                  <AppointmentCard
+                    id={item.disease_id}
+                    key={item.appoint_id}
+                    name={patientInfo.fullname}
+                    age_years={String(patientInfo.age_years)}
+                    age_months={String(patientInfo.age_months)}
+                    age_days={String(patientInfo.age_days)}
+                    date={formatThaiDate(item.date)}
+                    delay_date={formatThaiDate(item.delay_date)}
+                    disease={item.disease_name}
+                    time={`${item.start_time} - ${item.end_time}`}
+                    delay_time={`${item.delay_start_time} - ${item.delay_end_time}`}
+                    department={item.purpose}
+                    location={item.place}
+                    doctor={item.doctor}
+                    index={index}
+                    total={patientInfo.appoint.length}
+                    status={item.status}
+                  />
+                </View>
+              ))
+            )}
           </ScrollView>
         </View>
 
@@ -261,5 +277,21 @@ const styles = StyleSheet.create({
   cardWrapper: {
     marginBottom: 16,
     marginHorizontal: -16,
+  },
+
+  emptyCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 3,
+  },
+
+  emptyText: {
+    fontSize: 16,
+    fontFamily: "IBMPlexSansThai_500Medium",
+    color: "#7A7A7A",
+    marginTop: 8,
   },
 });
