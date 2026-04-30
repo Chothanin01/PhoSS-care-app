@@ -1,8 +1,8 @@
 import AppButton from "@/components/appButton";
 import BackButton from "@/components/backButton";
 import { api } from "@/services/api";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {

@@ -1,4 +1,5 @@
 import BackButton from "@/components/backButton";
+import { api } from "@/services/api";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -14,13 +15,15 @@ export default function RescheduleScreen() {
   const router = useRouter();
 
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<number | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
-
+  const [currentApiDate, setCurrentApiDate] = useState<Date | null>(null);
+  const [availableDays, setAvailableDays] = useState<string[]>([]);
+  const [diseaseId, setDiseaseId] = useState<string | null>(null);
+  const [appointId, setAppointId] = useState<string | null>(null);
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDay = new Date(year, month, 1).getDay();
 
@@ -29,39 +32,98 @@ export default function RescheduleScreen() {
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ];
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const appointmentRes = await api.get("/v1/patient/appointments");
+
+        const appointList = appointmentRes.data?.data?.appoint;
+        if (!appointList || appointList.length === 0) return;
+
+        const ongoing =
+          appointList.find((a: any) => a.status === "ongoing") ||
+          appointList[0];
+
+        setDiseaseId(ongoing.disease_id);
+        setAppointId(ongoing.appoint_id);
+
+        const scheduleRes = await api.get(
+          `/v1/patient/appointments/schedule/${ongoing.disease_id}`
+        );
+
+        const currentDateStr = scheduleRes.data?.data?.current_date;
+        const available = scheduleRes.data?.data?.available_days || [];
+
+        setAvailableDays(available);
+
+        if (!currentDateStr) return;
+
+        const date = new Date(currentDateStr);
+
+        setCurrentApiDate(date);
+        setCurrentDate(date);
+      } catch (err) {
+        console.log("fetch error:", err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const dayMap: Record<string, string> = {
+    Sunday: "อา",
+    Monday: "จ",
+    Tuesday: "อ",
+    Wednesday: "พ",
+    Thursday: "พฤ",
+    Friday: "ศ",
+    Saturday: "ส",
+  };
+
+  const isAvailableDay = (day: number) => {
+    const date = new Date(year, month, day);
+
+    const thaiDays = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
+    const thaiDay = thaiDays[date.getDay()];
+
+    const allowedThaiDays = availableDays.map((d) => dayMap[d]);
+
+    return allowedThaiDays.includes(thaiDay);
+  };
+
   const changeMonth = (diff: number) => {
     const newDate = new Date(year, month + diff, 1);
     setCurrentDate(newDate);
     setSelectedDate(null);
     setSelectedTime(null);
   };
-
-  const formatThaiDate = (day: number) => {
+  const formatThaiDate = (date: Date) => {
     const months = [
       "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
       "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
     ];
-    const date = new Date(year, month, day);
-    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear() + 543}`;
+
+    return `${date.getDate()} ${
+      months[date.getMonth()]
+    } ${date.getFullYear() + 543}`;
+  };
+
+  const formatDateForAPI = (date: Date) => {
+    return date.toISOString().split("T")[0];
   };
 
   const timeSlots = [
-    "08:30 - 09:30",
-    "09:30 - 10:30",
-    "10:30 - 11:30",
-    "13:30 - 14:30",
+    { start: "08:30", end: "09:30" },
+    { start: "09:30", end: "10:30" },
+    { start: "10:30", end: "11:30" },
+    { start: "13:30", end: "14:30" },
   ];
 
   const toggleTime = (time: string) => {
-    if (selectedTime === time) {
-      setSelectedTime(null);
-    } else {
-      setSelectedTime(time);
-    }
+    setSelectedTime(selectedTime === time ? null : time);
   };
 
   const hasSelectedTime = selectedTime !== null;
-
   const isDisabled = !selectedDate || !selectedTime;
 
   useEffect(() => {
@@ -73,6 +135,27 @@ export default function RescheduleScreen() {
       return () => clearTimeout(timer);
     }
   }, [showModal]);
+  const handleSubmit = async () => {
+    try {
+      const selectedSlot = timeSlots.find(
+        (s) => `${s.start} - ${s.end}` === selectedTime
+      );
+
+      if (!selectedSlot || !selectedDate) return;
+
+      await api.post("/v1/patient/appointments/delay", {
+        appoint_id: appointId,
+        disease_id: diseaseId,
+        date: formatDateForAPI(selectedDate),
+        start_time: selectedSlot.start,
+        end_time: selectedSlot.end,
+      });
+
+      setShowModal(true);
+    } catch (err) {
+      console.log("delay error:", err);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -116,15 +199,31 @@ export default function RescheduleScreen() {
               ))}
 
               {daysArray.map((day, index) => {
-                const isSelected = day !== null && day === selectedDate;
+                const isSelected =
+                  day !== null &&
+                  selectedDate &&
+                  day === selectedDate.getDate() &&
+                  month === selectedDate.getMonth() &&
+                  year === selectedDate.getFullYear();
+
+                const isCurrentApiDate =
+                  day !== null &&
+                  currentApiDate &&
+                  day === currentApiDate.getDate() &&
+                  month === currentApiDate.getMonth() &&
+                  year === currentApiDate.getFullYear();
+
+                const isAvailable =
+                  day !== null &&
+                  (isAvailableDay(day) || isCurrentApiDate);
 
                 return (
                   <TouchableOpacity
                     key={index}
                     style={styles.dayBox}
-                    disabled={!day}
+                    disabled={!day || !isAvailable}
                     onPress={() => {
-                      setSelectedDate(day!);
+                      setSelectedDate(new Date(year, month, day!));
                       setSelectedTime(null);
                     }}
                   >
@@ -132,12 +231,15 @@ export default function RescheduleScreen() {
                       style={[
                         styles.dayInner,
                         isSelected && styles.daySelected,
+                        isCurrentApiDate && styles.dayCurrent,
+                        !isAvailable && styles.dayDisabled
                       ]}
                     >
                       <Text
                         style={[
                           styles.font,
                           isSelected && { color: "white" },
+                          !isAvailable && { color: "#ccc" },
                         ]}
                       >
                         {day || ""}
@@ -151,39 +253,33 @@ export default function RescheduleScreen() {
 
           <Text style={styles.sectionTitle}>เลือกช่วงเวลา</Text>
 
-          {timeSlots.map((time) => {
-            const selected = selectedTime === time;
+          {timeSlots.map((slot) => {
+            const label = `${slot.start} - ${slot.end}`;
+            const selected = selectedTime === label;
 
             return (
               <TouchableOpacity
-                key={time}
-                disabled={hasSelectedTime && selectedTime !== time}
+                key={label}
+                disabled={hasSelectedTime && selectedTime !== label}
                 style={[
                   styles.timeItem,
-                  hasSelectedTime && selectedTime !== time && styles.timeDisabled,
+                  hasSelectedTime && selectedTime !== label && styles.timeDisabled,
                 ]}
-                onPress={() => toggleTime(time)}
+                onPress={() => toggleTime(label)}
               >
                 <View style={styles.timeRow}>
                   <View
                     style={[
                       styles.circle,
                       selected && styles.circleSelected,
-                      hasSelectedTime && selectedTime !== time && styles.circleDisabled,
                     ]}
                   >
                     {selected && (
                       <Ionicons name="checkmark" size={16} color="white" />
                     )}
                   </View>
-                  <Text
-                    style={[
-                      styles.timeText,
-                      hasSelectedTime && selectedTime !== time && styles.textDisabled, 
-                    ]}
-                  >
-                    {time}
-                  </Text>
+
+                  <Text style={styles.timeText}>{label}</Text>
                 </View>
               </TouchableOpacity>
             );
@@ -192,7 +288,7 @@ export default function RescheduleScreen() {
 
         <TouchableOpacity
           disabled={isDisabled}
-          onPress={() => setShowModal(true)}
+          onPress={handleSubmit}
           style={[
             styles.button,
             isDisabled && styles.buttonDisabled,
@@ -439,5 +535,11 @@ const styles = StyleSheet.create({
     color: "#6b7280",
     textAlign: "center",
     fontFamily: "IBMPlexSansThai_500Medium",
+  },
+  dayCurrent: {
+    backgroundColor: "#CBCBCB",
+  },
+  dayDisabled: {
+    backgroundColor: "#F3F4F6",
   },
 });
