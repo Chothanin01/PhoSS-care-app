@@ -1,7 +1,7 @@
 import BackButton from "@/components/backButton";
 import { api } from "@/services/api";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Modal,
@@ -26,49 +26,63 @@ export default function RescheduleScreen() {
   const month = currentDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDay = new Date(year, month, 1).getDay();
+  const { disease_id, appoint_id } = useLocalSearchParams();
+  useEffect(() => {
+  if (disease_id && appoint_id) {
+    setDiseaseId(disease_id as string);
+    setAppointId(appoint_id as string);
+  }
+}, [disease_id, appoint_id]);
 
   const daysArray = [
     ...Array(firstDay).fill(null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ];
-
+  
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const appointmentRes = await api.get("/v1/patient/appointments");
+  const fetchData = async () => {
+    try {
+      if (!disease_id) return;
 
-        const appointList = appointmentRes.data?.data?.appoint;
-        if (!appointList || appointList.length === 0) return;
+      const appointmentRes = await api.get("/v1/patient/appointments");
 
-        const ongoing =
-          appointList.find((a: any) => a.status === "ongoing") ||
-          appointList[0];
+      const appointList = appointmentRes.data?.data?.appoint;
+      if (!appointList || appointList.length === 0) return;
 
-        setDiseaseId(ongoing.disease_id);
-        setAppointId(ongoing.appoint_id);
+      const selected = appointList.find(
+        (a: any) => a.disease_id === disease_id
+      );
 
-        const scheduleRes = await api.get(
-          `/v1/patient/appointments/schedule/${ongoing.disease_id}`
-        );
+      if (!selected) {
+        console.log("ไม่เจอ disease_id ที่ตรง");
+        return;
+      }
 
-        const currentDateStr = scheduleRes.data?.data?.current_date;
-        const available = scheduleRes.data?.data?.available_days || [];
+      setDiseaseId(selected.disease_id);
+      setAppointId(selected.appoint_id);
 
-        setAvailableDays(available);
+      const scheduleRes = await api.get(
+        `/v1/patient/appointments/schedule/${selected.disease_id}`
+      );
 
-        if (!currentDateStr) return;
+      const currentDateStr = scheduleRes.data?.data?.current_date;
+      const available = scheduleRes.data?.data?.available_days || [];
 
+      setAvailableDays(available);
+
+      if (currentDateStr) {
         const date = new Date(currentDateStr);
-
         setCurrentApiDate(date);
         setCurrentDate(date);
-      } catch (err) {
-        console.log("fetch error:", err);
       }
-    };
 
-    fetchData();
-  }, []);
+    } catch (err) {
+      console.log("fetch error:", err);
+    }
+  };
+
+  fetchData();
+}, [disease_id]);
 
   const dayMap: Record<string, string> = {
     Sunday: "อา",

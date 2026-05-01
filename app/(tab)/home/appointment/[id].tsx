@@ -367,7 +367,13 @@ export default function AppointmentDetail() {
               }
 
             } else {
-              router.push("/(tab)/reSchedule");
+              router.push({
+                pathname: "/(tab)/reSchedule",
+                params: {
+                  disease_id: appointment.disease_id,
+                  appoint_id: appointment.appoint_id,
+                },
+              });
             }
           }}
         />
