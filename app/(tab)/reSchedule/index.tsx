@@ -16,7 +16,10 @@ export default function RescheduleScreen() {
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState<{
+    start: string;
+    end: string;
+  } | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [currentApiDate, setCurrentApiDate] = useState<Date | null>(null);
   const [availableDays, setAvailableDays] = useState<string[]>([]);
@@ -28,60 +31,60 @@ export default function RescheduleScreen() {
   const firstDay = new Date(year, month, 1).getDay();
   const { disease_id, appoint_id } = useLocalSearchParams();
   useEffect(() => {
-  if (disease_id ) {
-    setDiseaseId(disease_id as string);
-  }
-}, [disease_id, appoint_id]);
+    if (disease_id) {
+      setDiseaseId(disease_id as string);
+    }
+  }, [disease_id, appoint_id]);
 
   const daysArray = [
     ...Array(firstDay).fill(null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ];
-  
+
   useEffect(() => {
-  const fetchData = async () => {
-    try {
-      if (!disease_id) return;
+    const fetchData = async () => {
+      try {
+        if (!disease_id) return;
 
-      const appointmentRes = await api.get("/v1/patient/appointments");
+        const appointmentRes = await api.get("/v1/patient/appointments");
 
-      const appointList = appointmentRes.data?.data?.appoint;
-      if (!appointList || appointList.length === 0) return;
+        const appointList = appointmentRes.data?.data?.appoint;
+        if (!appointList || appointList.length === 0) return;
 
-      const selected = appointList.find(
-        (a: any) => a.disease_id === disease_id
-      );
+        const selected = appointList.find(
+          (a: any) => a.disease_id === disease_id
+        );
 
-      if (!selected) {
-        console.log("ไม่เจอ disease_id ที่ตรง");
-        return;
+        if (!selected) {
+          console.log("ไม่เจอ disease_id ที่ตรง");
+          return;
+        }
+
+        setDiseaseId(selected.disease_id);
+        setAppointId(selected.appoint_id);
+
+        const scheduleRes = await api.get(
+          `/v1/patient/appointments/schedule/${selected.disease_id}`
+        );
+
+        const currentDateStr = scheduleRes.data?.data?.current_date;
+        const available = scheduleRes.data?.data?.available_days || [];
+
+        setAvailableDays(available);
+
+        if (currentDateStr) {
+          const date = new Date(currentDateStr);
+          setCurrentApiDate(date);
+          setCurrentDate(date);
+        }
+
+      } catch (err) {
+        console.log("fetch error:", err);
       }
+    };
 
-      setDiseaseId(selected.disease_id);
-      setAppointId(selected.appoint_id);
-
-      const scheduleRes = await api.get(
-        `/v1/patient/appointments/schedule/${selected.disease_id}`
-      );
-
-      const currentDateStr = scheduleRes.data?.data?.current_date;
-      const available = scheduleRes.data?.data?.available_days || [];
-
-      setAvailableDays(available);
-
-      if (currentDateStr) {
-        const date = new Date(currentDateStr);
-        setCurrentApiDate(date);
-        setCurrentDate(date);
-      }
-
-    } catch (err) {
-      console.log("fetch error:", err);
-    }
-  };
-
-  fetchData();
-}, [disease_id]);
+    fetchData();
+  }, [disease_id]);
 
   const dayMap: Record<string, string> = {
     Sunday: "อา",
@@ -116,9 +119,8 @@ export default function RescheduleScreen() {
       "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
     ];
 
-    return `${date.getDate()} ${
-      months[date.getMonth()]
-    } ${date.getFullYear() + 543}`;
+    return `${date.getDate()} ${months[date.getMonth()]
+      } ${date.getFullYear() + 543}`;
   };
 
   const formatDateForAPI = (date: Date) => {
@@ -132,8 +134,15 @@ export default function RescheduleScreen() {
     { start: "13:30", end: "14:30" },
   ];
 
-  const toggleTime = (time: string) => {
-    setSelectedTime(selectedTime === time ? null : time);
+  const toggleTime = (slot: { start: string; end: string }) => {
+    if (
+      selectedTime?.start === slot.start &&
+      selectedTime?.end === slot.end
+    ) {
+      setSelectedTime(null);
+    } else {
+      setSelectedTime(slot);
+    }
   };
 
   const hasSelectedTime = selectedTime !== null;
@@ -150,18 +159,14 @@ export default function RescheduleScreen() {
   }, [showModal]);
   const handleSubmit = async () => {
     try {
-      const selectedSlot = timeSlots.find(
-        (s) => `${s.start} - ${s.end}` === selectedTime
-      );
 
-      if (!selectedSlot || !selectedDate) return;
+      if (!selectedTime || !selectedDate) return;
 
       await api.post("/v1/patient/appointments/delay", {
-        appoint_id: appointId,
         disease_id: diseaseId,
         date: formatDateForAPI(selectedDate),
-        start_time: selectedSlot.start,
-        end_time: selectedSlot.end,
+        start_time: selectedTime.start,
+        end_time: selectedTime.end,
       });
 
       setShowModal(true);
@@ -268,17 +273,20 @@ export default function RescheduleScreen() {
 
           {timeSlots.map((slot) => {
             const label = `${slot.start} - ${slot.end}`;
-            const selected = selectedTime === label;
+
+            const selected =
+              selectedTime?.start === slot.start &&
+              selectedTime?.end === slot.end;
 
             return (
               <TouchableOpacity
                 key={label}
-                disabled={hasSelectedTime && selectedTime !== label}
+                disabled={hasSelectedTime && !selected}
                 style={[
                   styles.timeItem,
-                  hasSelectedTime && selectedTime !== label && styles.timeDisabled,
+                  hasSelectedTime && !selected && styles.timeDisabled,
                 ]}
-                onPress={() => toggleTime(label)}
+                onPress={() => toggleTime(slot)}
               >
                 <View style={styles.timeRow}>
                   <View

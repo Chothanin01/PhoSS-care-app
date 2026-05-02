@@ -28,25 +28,27 @@ export default function DiseaseModal({
   const [diseases, setDiseases] = useState<DiseaseItem[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const fetchDiseases = async () => {
+    try {
+      setLoading(true);
+
+      const res = await api.get("/v1/patient/diseases", {
+        params: { type: "appoint" },
+      });
+
+      const list = res.data?.data || [];
+
+      setDiseases(list);
+
+      console.log("diseases:", list);
+    } catch (err) {
+      console.log("fetch diseases error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchDiseases = async () => {
-      try {
-        setLoading(true);
-
-        const res = await api.get("/v1/patient/diseases", {
-          params: { type: "appoint" },
-        });
-
-        const list = res.data?.data || [];
-
-        setDiseases(list);
-      } catch (err) {
-        console.log("fetch diseases error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (visible) {
       fetchDiseases();
     }
@@ -59,7 +61,7 @@ export default function DiseaseModal({
 
     router.push({
       pathname: targetPath,
-      params: { disease_id: selectedDisease }, 
+      params: { disease_id: selectedDisease },
     });
 
     setSelectedDisease(null);
@@ -85,6 +87,7 @@ export default function DiseaseModal({
           </TouchableOpacity>
 
           <Text style={styles.title}>กรุณาเลือกโรคที่ต้องการ</Text>
+
           {!loading && diseases.length === 0 && (
             <Text>ไม่มีข้อมูลโรค</Text>
           )}
@@ -118,14 +121,11 @@ export default function DiseaseModal({
                   )}
                 </View>
 
-                <Text style={styles.optionText}>
-                  {item.name}
-                </Text>
+                <Text style={styles.optionText}>{item.name}</Text>
               </TouchableOpacity>
             );
           })}
 
-          {/* confirm */}
           <TouchableOpacity
             disabled={!selectedDisease}
             onPress={handleConfirm}
@@ -143,6 +143,7 @@ export default function DiseaseModal({
     </Modal>
   );
 }
+
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
