@@ -1,8 +1,9 @@
-import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { api } from "@/services/api";
 import { MenuPath } from "@/types/navigation";
-import { useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type Props = {
   visible: boolean;
@@ -12,12 +13,10 @@ type Props = {
   targetPath: MenuPath | null;
 };
 
-const diseases = [
-  "โรคความดันโลหิตสูง",
-  "โรคเบาหวาน",
-  "วัคซีนเด็ก",
-  "วัณโรค",
-];
+type DiseaseItem = {
+  disease_id: string;
+  name: string;
+};
 
 export default function DiseaseModal({
   visible,
@@ -26,6 +25,33 @@ export default function DiseaseModal({
   setSelectedDisease,
   targetPath,
 }: Props) {
+  const [diseases, setDiseases] = useState<DiseaseItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchDiseases = async () => {
+      try {
+        setLoading(true);
+
+        const res = await api.get("/v1/patient/diseases", {
+          params: { type: "appoint" },
+        });
+
+        const list = res.data?.data || [];
+
+        setDiseases(list);
+      } catch (err) {
+        console.log("fetch diseases error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (visible) {
+      fetchDiseases();
+    }
+  }, [visible]);
+
   const handleConfirm = () => {
     if (!selectedDisease || !targetPath) return;
 
@@ -33,7 +59,7 @@ export default function DiseaseModal({
 
     router.push({
       pathname: targetPath,
-      params: { disease: selectedDisease },
+      params: { disease_id: selectedDisease }, 
     });
 
     setSelectedDisease(null);
@@ -54,28 +80,33 @@ export default function DiseaseModal({
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.modal}>
-
           <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
             <Ionicons name="close" size={20} color="#666" />
           </TouchableOpacity>
 
           <Text style={styles.title}>กรุณาเลือกโรคที่ต้องการ</Text>
+          {!loading && diseases.length === 0 && (
+            <Text>ไม่มีข้อมูลโรค</Text>
+          )}
 
           {diseases.map((item) => {
-            const isActive = selectedDisease === item;
+            const isActive = selectedDisease === item.disease_id;
 
             return (
               <TouchableOpacity
-                key={item}
+                key={item.disease_id}
                 onPress={() =>
-                  setSelectedDisease(selectedDisease === item ? null : item)
+                  setSelectedDisease(
+                    selectedDisease === item.disease_id
+                      ? null
+                      : item.disease_id
+                  )
                 }
                 style={[
                   styles.option,
                   isActive ? styles.optionActive : styles.optionInactive,
                 ]}
               >
-                {/* radio */}
                 <View
                   style={[
                     styles.radio,
@@ -87,7 +118,9 @@ export default function DiseaseModal({
                   )}
                 </View>
 
-                <Text style={styles.optionText}>{item}</Text>
+                <Text style={styles.optionText}>
+                  {item.name}
+                </Text>
               </TouchableOpacity>
             );
           })}
@@ -105,13 +138,11 @@ export default function DiseaseModal({
           >
             <Text style={styles.confirmText}>ยืนยันการเลือก</Text>
           </TouchableOpacity>
-
         </View>
       </View>
     </Modal>
   );
 }
-
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
@@ -196,7 +227,7 @@ const styles = StyleSheet.create({
   confirmInactive: {
     backgroundColor: "#D1D5DB",
   },
-  
+
   confirmText: {
     color: "#fff",
     fontSize: 18,

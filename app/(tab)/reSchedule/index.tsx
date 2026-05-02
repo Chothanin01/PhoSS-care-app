@@ -28,9 +28,8 @@ export default function RescheduleScreen() {
   const firstDay = new Date(year, month, 1).getDay();
   const { disease_id, appoint_id } = useLocalSearchParams();
   useEffect(() => {
-  if (disease_id && appoint_id) {
+  if (disease_id ) {
     setDiseaseId(disease_id as string);
-    setAppointId(appoint_id as string);
   }
 }, [disease_id, appoint_id]);
 
