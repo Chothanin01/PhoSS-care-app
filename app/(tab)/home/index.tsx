@@ -1,12 +1,12 @@
 import DiseaseModal from "@/components/home/diseaseModal";
 import GridMenu from "@/components/home/gridMenu";
 import AppointmentCard from "@/components/home/homeAppointmentCard";
+import { hasUnread } from "@/data/notification";
+import { api } from "@/services/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Dimensions, Image, ScrollView, StyleSheet, Text, View } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { hasUnread } from "@/data/notification";
-import { api } from "@/services/api";
 
 type Appointment = {
   appoint_id: string;
@@ -48,6 +48,7 @@ export default function Page() {
   const [targetPath, setTargetPath] = useState<MenuPath | null>(null);
 
   const [patientInfo, setPatientInfo] = useState<PatientData | null>(null);
+  const [mode, setMode] = useState<"appoint" | "history">("appoint");
   const [loading, setLoading] = useState(true);
 
   const notificationCount = hasUnread() ? 1 : 0;
@@ -87,15 +88,22 @@ export default function Page() {
   type MenuPath = (typeof menuItems)[number]["path"];
 
   const handleMenuPress = (path: MenuPath) => {
-    const needDisease = ["/(tab)/reSchedule", "/(tab)/medicalHis"];
+  if (path === "/(tab)/reSchedule") {
+    setMode("appoint"); // ✅ ต้องมี
+    setTargetPath(path);
+    setModalVisible(true);
+    return;
+  }
 
-    if (needDisease.includes(path)) {
-      setTargetPath(path);
-      setModalVisible(true);
-    } else {
-      router.push(path);
-    }
-  };
+  if (path === "/(tab)/medicalHis") {
+    setMode("history"); // ✅ ต้องมี
+    setTargetPath(path);
+    setModalVisible(true);
+    return;
+  }
+
+  router.push(path);
+};
 
   const fetchPatientAppointments = async () => {
     try {
@@ -126,7 +134,7 @@ export default function Page() {
     fetchPatientAppointments();
   }, []);
 
-  return ( 
+  return (
     <>
       <ScrollView style={styles.container}>
 
@@ -208,6 +216,7 @@ export default function Page() {
         selectedDisease={selectedDisease}
         setSelectedDisease={setSelectedDisease}
         targetPath={targetPath}
+        mode={mode} // 👈 ต้องส่ง
       />
     </>
   );

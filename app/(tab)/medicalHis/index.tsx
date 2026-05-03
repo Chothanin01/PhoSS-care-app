@@ -13,8 +13,11 @@ import {
 } from "react-native";
 
 export default function MedicalHisPage() {
-  const { disease } = useLocalSearchParams<{ disease: string }>();
-  const isVaccine = disease === "วัคซีนเด็ก";
+  const { disease_id, disease_name } = useLocalSearchParams<{
+    disease_id: string;
+    disease_name: string;
+  }>();
+  const isVaccine = disease_name === "วัคซีน";
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
   const [filter, setFilter] = useState("ทั้งหมด");
@@ -39,16 +42,11 @@ export default function MedicalHisPage() {
 
     return `${day} ${month} ${year}`;
   };
-  const diseaseMap: Record<string, string> = {
-    โรคเบาหวาน: "77fe42d0-1d68-4e02-9ac0-6914a446ab2a",
-    โรคความดันโลหิตสูง: "58da0327-d979-46cf-ac6c-71ad655d541b",
-    วัณโรค: "56d1cd69-156f-4959-9d1e-7e66a695cfa8",
-  };
 
   useEffect(() => {
     if (isVaccine) fetchVaccine(1);
-    else if (disease) fetchHistory();
-  }, [disease]);
+    else if (disease_id) fetchHistory();
+  }, [disease_id]);
 
   const getToken = async () => {
     return await AsyncStorage.getItem("token");
@@ -111,14 +109,13 @@ export default function MedicalHisPage() {
 
       const token = await AsyncStorage.getItem("token");
 
-      const diseaseId = diseaseMap[disease || ""];
-      if (!diseaseId) {
-        console.log(" ไม่พบ disease_id:", disease);
+      if (!disease_id) {
+        console.log("ไม่พบ disease_id");
         return;
       }
 
       const res = await api.get(
-        `/v1/patient/appointments/history/${diseaseId}`,
+        `/v1/patient/appointments/history/${disease_id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -174,7 +171,7 @@ export default function MedicalHisPage() {
             <BackButton targetPath={`/(tab)/home`} />
           </View>
           <Text style={styles.title}>
-            {isVaccine ? "วัคซีน" : disease || "ไม่พบข้อมูลโรค"}
+            {isVaccine ? "วัคซีน" : disease_name || "ไม่พบข้อมูลโรค"}
           </Text>
         </View>
         {isVaccine && (
@@ -251,8 +248,9 @@ export default function MedicalHisPage() {
                       pathname: "/(tab)/medicalHis/detail/[id]",
                       params: {
                         id: String(item.id),
-                        disease: String(disease),
-                      },
+                        disease_id: String(disease_id),
+                        disease_name: String(disease_name),
+                      }
                     })
                   }
                 >
@@ -263,7 +261,7 @@ export default function MedicalHisPage() {
                   />
                 </TouchableOpacity>
               </View>
-              
+
             </View>
           ))}
         {!isVaccine &&
@@ -304,8 +302,9 @@ export default function MedicalHisPage() {
                       pathname: "/(tab)/medicalHis/detail/[id]",
                       params: {
                         id: String(item.id),
-                        disease: String(disease),
-                      },
+                        disease_id: String(disease_id),
+                        disease_name: String(disease_name),
+                      }
                     })
                   }
                 >
@@ -318,37 +317,37 @@ export default function MedicalHisPage() {
               </View>
             </View>
           ))}
-          <View style={styles.pagination}>
-            <TouchableOpacity
-              disabled={page === 1}
-              onPress={() => fetchVaccine(page - 1)}
-              style={[styles.pageButton, page === 1 && { opacity: 0.4 }]}
-            >
-              <View style={styles.buttonContent}>
-                <Ionicons name="caret-back-outline" size={22} color="#05548D" />
-                <Text style={styles.navText}>ย้อนกลับ</Text>
-              </View>
-            </TouchableOpacity>
+        <View style={styles.pagination}>
+          <TouchableOpacity
+            disabled={page === 1}
+            onPress={() => fetchVaccine(page - 1)}
+            style={[styles.pageButton, page === 1 && { opacity: 0.4 }]}
+          >
+            <View style={styles.buttonContent}>
+              <Ionicons name="caret-back-outline" size={22} color="#05548D" />
+              <Text style={styles.navText}>ย้อนกลับ</Text>
+            </View>
+          </TouchableOpacity>
 
-            <Text style={styles.text}>
-              {page} / {totalPage}
-            </Text>
+          <Text style={styles.text}>
+            {page} / {totalPage}
+          </Text>
 
-            <TouchableOpacity
-              disabled={page >= totalPage}
-              onPress={() => fetchVaccine(page + 1)}
-              style={[
-                styles.pageButton,
-                page >= totalPage && { opacity: 0.4 },
-              ]}
-            >
-              <View style={styles.buttonContent}>
-                <Text style={styles.navText}>ต่อไป</Text>
-                <Ionicons name="caret-forward-outline" size={22} color="#05548D" />
-              </View>
+          <TouchableOpacity
+            disabled={page >= totalPage}
+            onPress={() => fetchVaccine(page + 1)}
+            style={[
+              styles.pageButton,
+              page >= totalPage && { opacity: 0.4 },
+            ]}
+          >
+            <View style={styles.buttonContent}>
+              <Text style={styles.navText}>ต่อไป</Text>
+              <Ionicons name="caret-forward-outline" size={22} color="#05548D" />
+            </View>
 
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );

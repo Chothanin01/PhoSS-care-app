@@ -13,11 +13,13 @@ import {
 } from "react-native";
 
 export default function MedicalHistoryDetailPage() {
-  const { id, disease } = useLocalSearchParams<{
+  const { id, disease_id, disease_name } = useLocalSearchParams<{
     id: string;
-    disease: string;
+    disease_id: string;
+    disease_name: string;
+    appoint_id: string;
   }>();
-  const isVaccine = disease?.includes("วัคซีน");
+  const isVaccine = disease_name?.includes("วัคซีน");
   const formatDateThai = (dateStr: string) => {
     if (!dateStr || dateStr === "0001-01-01") return "ไม่ระบุวันที่";
 
@@ -50,7 +52,7 @@ export default function MedicalHistoryDetailPage() {
     } else {
       fetchMedicalDetail(id);
     }
-  }, [id]);
+  }, [id, disease_name]);
   const fetchVaccineDetail = async (vaccineId: string) => {
     try {
       setLoading(true);
@@ -142,7 +144,8 @@ export default function MedicalHistoryDetailPage() {
       pathname: "/(tab)/medicalHis/detail/[id]",
       params: {
         id: data.prevId,
-        disease: String(disease ?? ""),
+        disease_id: String(disease_id),
+        disease_name: String(disease_name),
       },
     });
   };
@@ -154,7 +157,8 @@ export default function MedicalHistoryDetailPage() {
       pathname: "/(tab)/medicalHis/detail/[id]",
       params: {
         id: data.nextId,
-        disease: String(disease ?? ""),
+        disease_id: String(disease_id),
+        disease_name: String(disease_name),
       },
     });
   };
@@ -165,7 +169,7 @@ export default function MedicalHistoryDetailPage() {
         <View style={styles.header}>
           <View style={styles.backWrapper}>
             <BackButton
-              targetPath={`/(tab)/medicalHis?disease=${disease}`}
+              targetPath={`/(tab)/medicalHis?disease_id=${disease_id}&disease_name=${disease_name}`}
             />
           </View>
           <Text style={styles.title}>
