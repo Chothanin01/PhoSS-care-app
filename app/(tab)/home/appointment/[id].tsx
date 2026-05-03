@@ -1,9 +1,10 @@
 import AppButton from "@/components/appButton";
 import BackButton from "@/components/backButton";
-import { appointments } from "@/data/appointments";
+import { api } from "@/services/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Modal,
   ScrollView,
@@ -12,22 +13,195 @@ import {
   View,
 } from "react-native";
 
+type AppointmentDetailData = {
+  appoint_id: string;
+  disease_id: string;
+  fullname: string;
+  hn_number: string;
+  age_years: number;
+  age_months: number;
+  age_days: number;
+  date: string;
+  delay_date: string;
+  start_time: string;
+  end_time: string;
+  delay_end_time: string;
+  delay_start_time: string;
+  purpose: string;
+  disease_name: string;
+  place: string;
+  doctor: string;
+  created_by: string;
+  appointment_date: string;
+  status: string;
+  created_at: string;
+};
+
+type BasicInfoData = {
+  patient_id: string;
+  fullname: string;
+  hn_number: string;
+  age_years: number;
+  age_months: number;
+  age_days: number;
+};
+
+const formatThaiDate = (dateString: string) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  const thaiMonths = [
+    "มกราคม",
+    "กุมภาพันธ์",
+    "มีนาคม",
+    "เมษายน",
+    "พฤษภาคม",
+    "มิถุนายน",
+    "กรกฎาคม",
+    "สิงหาคม",
+    "กันยายน",
+    "ตุลาคม",
+    "พฤศจิกายน",
+    "ธันวาคม",
+  ];
+
+  const day = date.getDate();
+  const month = thaiMonths[date.getMonth()];
+  const year = date.getFullYear() + 543;
+
+  return `${day} ${month} ${year}`;
+};
+
 export default function AppointmentDetail() {
   const { id } = useLocalSearchParams();
 
-  const appointment = appointments.find(
-    (a) => a.id === Number(id)
-  );
+  const [appointment, setAppointment] =
+    useState<AppointmentDetailData | null>(null);
+  const [basicInfo, setBasicInfo] =
+    useState<BasicInfoData | null>(null);
 
-  const [status, setStatus] = useState(appointment?.status);
+  const [status, setStatus] = useState<string>("");
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  if (!appointment) return <Text>ไม่พบข้อมูล</Text>;
+  const fetchBasicInfo = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
 
-  const getStatusStyle = () => {
-    if (status === "กำลังพิจารณา") return styles.pendingBadge;
-    if (status === "ถูกยกเลิก") return styles.cancelBadge;
-    return null;
+      if (!token) {
+        console.log("No token found");
+        return;
+      }
+
+      const response = await api.get(
+        "/v1/patient/basicinfo",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      return response.data.data;
+    } catch (error) {
+      console.log("Fetch basic info error:", error);
+      return null;
+    }
+  };
+
+  const fetchAppointmentDetail = async () => {
+    try {
+      setLoading(true);
+
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        console.log("No token found");
+        return;
+      }
+
+      const response = await api.get(
+        `/v1/patient/appointments/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setAppointment(response.data.data);
+      setStatus(response.data.data.status);
+
+    } catch (error) {
+      console.log("Fetch appointment detail error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (id) {
+        await fetchAppointmentDetail();
+      }
+
+      const basicInfo = await fetchBasicInfo();
+
+      if (basicInfo) {
+        setBasicInfo(basicInfo);
+      }
+    };
+
+    loadData();
+  }, [id]);
+
+  if (loading) {
+    return <Text>Loading...</Text>;
+  }
+
+  if (!appointment) {
+    return <Text>ไม่พบข้อมูล</Text>;
+  }
+
+  const getStatusStyle = (status?: string) => {
+    switch (status) {
+      case "delay":
+        return styles.pendingBadge;
+
+      case "cancelled":
+        return styles.cancelBadge;
+
+      default:
+        return null;
+    }
+  };
+
+  const getStatusTextStyle = (status?: string) => {
+    switch (status) {
+      case "delay":
+        return styles.pendingTextColor;
+
+      case "cancelled":
+        return styles.cancelTextColor;
+
+      default:
+        return null;
+    }
+  };
+
+  const getStatusText = (status?: string) => {
+    switch (status) {
+      case "delay":
+        return "กำลังพิจารณา";
+
+      case "cancelled":
+        return "ถูกยกเลิก";
+
+      case "ongoing":
+        return "";
+
+      default:
+        return "";
+    }
   };
 
   return (
@@ -37,52 +211,94 @@ export default function AppointmentDetail() {
 
           <View style={styles.header}>
             <View style={styles.backWrapper}>
-              <BackButton />
+              <BackButton targetPath={`/(tab)/home`}/>
             </View>
 
             <Text style={styles.title}>ใบนัดแพทย์</Text>
           </View>
 
+          {/* Patient Card */}
           <View style={[styles.card, styles.cardShadow]}>
             <View style={styles.rowBetween}>
               <Text style={styles.textMedium}>
-                ชื่อ : {appointment.name}
+                {basicInfo?.fullname || "-"}
               </Text>
+
               <Text style={styles.textMedium}>
-                HN {appointment.hn}
+                HN {basicInfo?.hn_number || "-"}
               </Text>
             </View>
 
             <Text style={styles.textMedium}>
-              อายุ {appointment.age}
+              อายุ {basicInfo?.age_years || 0} ปี{" "}
+              {basicInfo?.age_months || 0} เดือน{" "}
+              {basicInfo?.age_days || 0} วัน
             </Text>
           </View>
 
+          {/* Appointment Detail Card */}
           <View style={[styles.card, styles.cardShadow]}>
             <View style={styles.rowBetween}>
-              <Text style={styles.titleLarge}>
-                วันที่นัด {appointment.date}
-              </Text>
-
-              {status && (
-                <View style={[styles.statusBadge, getStatusStyle()]}>
-                  <Text style={styles.statusText}>{status}</Text>
+              {status === "delay" ? (
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Text style={styles.oldDateAndTime}>
+                    {formatThaiDate(appointment.date)}
+                  </Text>
+                  <Text style={styles.newDateAndTime}>
+                    {"  "} {formatThaiDate(appointment.delay_date)}
+                  </Text>
+                </View>
+              ) : (
+                <Text style={styles.titleLarge}>
+                  วันที่นัด {formatThaiDate(appointment.date)}
+                </Text>
+              )}
+              {status !== "ongoing" && (
+                <View
+                  style={[
+                    styles.statusBadge,
+                    getStatusStyle(status),
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.statusText,
+                      getStatusTextStyle(status),
+                    ]}
+                  >
+                    {getStatusText(status)}
+                  </Text>
                 </View>
               )}
             </View>
 
-            <Text style={styles.textMedium}>เวลา : {appointment.time}</Text>
-            <Text style={styles.textMedium}>นัดเพื่อ : {appointment.department}</Text>
-            <Text style={styles.textMedium}>โรค : {appointment.disease}</Text>
-            <Text style={styles.textMedium}>สถานที่ : {appointment.location}</Text>
+            {status === "delay" ? (
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={styles.oldDateAndTime}>
+                  {appointment.start_time} - {appointment.end_time} น.
+                </Text>
+                <Text style={styles.newDateAndTime}>
+                  {"  "} {appointment.delay_start_time} - {appointment.delay_end_time} น.
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.textMedium}>
+                เวลา : {appointment.start_time} - {appointment.end_time} น.
+              </Text>
+            )}
+
+            <Text style={styles.textMedium}>นัดมาเพื่อ : {appointment.purpose}</Text>
+            <Text style={styles.textMedium}>โรค : {appointment.disease_name}</Text>
+            <Text style={styles.textMedium}>สถานที่ : {appointment.place}</Text>
             <Text style={styles.textMedium}>นัดพบแพทย์ : {appointment.doctor}</Text>
-            <Text style={styles.textMedium}>ผู้นัด : {appointment.createBy}</Text>
+            <Text style={styles.textMedium}>ผู้นัด : {appointment.created_by}</Text>
+
             <Text style={styles.textMedium}>
-              วันที่ออกใบนัด : {appointment.appointmentDate}
+              วันที่ออกใบนัด :{" "}{formatThaiDate(appointment.created_at)}
             </Text>
           </View>
 
-          {status === "กำลังพิจารณา" && (
+          {status === "delay" && (
             <View style={styles.pendingBox}>
               <Text style={styles.pendingText}>
                 เจ้าหน้าที่กำลังพิจารณาคำขอเลื่อนนัด
@@ -92,25 +308,27 @@ export default function AppointmentDetail() {
 
         </View>
       </ScrollView>
+
+      {/* Bottom Button */}
       <View style={styles.bottomButton}>
         <AppButton
           title={
-            status === "กำลังพิจารณา"
+            status === "delay"
               ? "ยกเลิกการเลื่อนนัด"
               : "เลื่อนนัด"
           }
           type={
-            status === "กำลังพิจารณา"
+            status === "delay"
               ? "danger"
               : "secondary"
           }
           onPress={() => {
-            if (status === "กำลังพิจารณา") {
+            if (status === "delay") {
               setShowModal(true);
 
               setTimeout(() => {
                 setShowModal(false);
-                setStatus("ถูกยกเลิก");
+                setStatus("cancelled");
               }, 3000);
             } else {
               router.push("/(tab)/reSchedule");
@@ -118,6 +336,8 @@ export default function AppointmentDetail() {
           }}
         />
       </View>
+
+      {/* Modal */}
       <Modal transparent visible={showModal} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
@@ -213,6 +433,13 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     backgroundColor: "#EBF7FF",
   },
+  pendingTextColor: {
+    color: "#856404",
+  },
+
+  cancelTextColor: {
+    color: "#D32F2F",
+  },
 
   statusBadge: {
     paddingHorizontal: 10,
@@ -225,11 +452,12 @@ const styles = StyleSheet.create({
   },
 
   cancelBadge: {
-    backgroundColor: "rgba(251, 76, 76, 0.3)"
+    backgroundColor: "rgba(251, 76, 76, 0.15)",
   },
 
   statusText: {
     fontSize: 12,
+    fontFamily: "IBMPlexSansThai_500Medium",
   },
 
   modalOverlay: {
@@ -271,6 +499,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 6,
   },
+
   pendingBox: {
     padding: 12,
     borderRadius: 12,
@@ -282,6 +511,22 @@ const styles = StyleSheet.create({
 
   pendingText: {
     fontSize: 18,
+    fontFamily: "IBMPlexSansThai_600SemiBold",
+    color: "#7A7A7A",
+  },
+
+  oldDateAndTime: {
+    fontSize: 14,
+    fontFamily: "IBMPlexSansThai_500Medium",
+    textDecorationLine: "line-through",
+    color: "#000",
+    marginRight: 4,
+  },
+
+  newDateAndTime: {
+    fontSize: 14,
+    fontFamily: "IBMPlexSansThai_500Medium",
+    color: "#7A7A7A",
   },
 
 });
