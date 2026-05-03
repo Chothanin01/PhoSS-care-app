@@ -1,6 +1,7 @@
 import BackButton from "@/components/backButton";
+import { api } from "@/services/api";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Modal,
@@ -14,20 +15,97 @@ export default function RescheduleScreen() {
   const router = useRouter();
 
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<number | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedTime, setSelectedTime] = useState<{
+    start: string;
+    end: string;
+  } | null>(null);
   const [showModal, setShowModal] = useState(false);
-
+  const [currentApiDate, setCurrentApiDate] = useState<Date | null>(null);
+  const [availableDays, setAvailableDays] = useState<string[]>([]);
+  const [diseaseId, setDiseaseId] = useState<string | null>(null);
+  const [appointId, setAppointId] = useState<string | null>(null);
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDay = new Date(year, month, 1).getDay();
+  const { disease_id, appoint_id } = useLocalSearchParams();
+  useEffect(() => {
+    if (disease_id) {
+      setDiseaseId(disease_id as string);
+    }
+  }, [disease_id, appoint_id]);
 
   const daysArray = [
     ...Array(firstDay).fill(null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (!disease_id) return;
+
+        const appointmentRes = await api.get("/v1/patient/appointments");
+
+        const appointList = appointmentRes.data?.data?.appoint;
+        if (!appointList || appointList.length === 0) return;
+
+        const selected = appointList.find(
+          (a: any) => a.disease_id === disease_id
+        );
+
+        if (!selected) {
+          console.log("ไม่เจอ disease_id ที่ตรง");
+          return;
+        }
+
+        setDiseaseId(selected.disease_id);
+        setAppointId(selected.appoint_id);
+
+        const scheduleRes = await api.get(
+          `/v1/patient/appointments/schedule/${selected.disease_id}`
+        );
+
+        const currentDateStr = scheduleRes.data?.data?.current_date;
+        const available = scheduleRes.data?.data?.available_days || [];
+
+        setAvailableDays(available);
+
+        if (currentDateStr) {
+          const date = new Date(currentDateStr);
+          setCurrentApiDate(date);
+          setCurrentDate(date);
+        }
+
+      } catch (err) {
+        console.log("fetch error:", err);
+      }
+    };
+
+    fetchData();
+  }, [disease_id]);
+
+  const dayMap: Record<string, string> = {
+    Sunday: "อา",
+    Monday: "จ",
+    Tuesday: "อ",
+    Wednesday: "พ",
+    Thursday: "พฤ",
+    Friday: "ศ",
+    Saturday: "ส",
+  };
+
+  const isAvailableDay = (day: number) => {
+    const date = new Date(year, month, day);
+
+    const thaiDays = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
+    const thaiDay = thaiDays[date.getDay()];
+
+    const allowedThaiDays = availableDays.map((d) => dayMap[d]);
+
+    return allowedThaiDays.includes(thaiDay);
+  };
 
   const changeMonth = (diff: number) => {
     const newDate = new Date(year, month + diff, 1);
@@ -35,33 +113,46 @@ export default function RescheduleScreen() {
     setSelectedDate(null);
     setSelectedTime(null);
   };
-
-  const formatThaiDate = (day: number) => {
+  const formatThaiDate = (date: Date) => {
     const months = [
       "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
       "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
     ];
-    const date = new Date(year, month, day);
-    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear() + 543}`;
+
+    return `${date.getDate()} ${months[date.getMonth()]
+      } ${date.getFullYear() + 543}`;
+  };
+
+  const formatDateForAPI = (date: Date) => {
+    return date.toISOString().split("T")[0];
   };
 
   const timeSlots = [
-    "08:30 - 09:30",
-    "09:30 - 10:30",
-    "10:30 - 11:30",
-    "13:30 - 14:30",
+    { start: "08:30", end: "09:30" },
+    { start: "09:30", end: "10:30" },
+    { start: "10:30", end: "11:30" },
+    { start: "13:30", end: "14:30" },
   ];
 
-  const toggleTime = (time: string) => {
-    if (selectedTime === time) {
+  const toggleTime = (slot: { start: string; end: string }) => {
+    if (
+      selectedTime?.start === slot.start &&
+      selectedTime?.end === slot.end
+    ) {
       setSelectedTime(null);
     } else {
-      setSelectedTime(time);
+      setSelectedTime(slot);
     }
+  };
+  const isTimeDisabled = (slot: { start: string; end: string }) => {
+    if (!selectedTime) return false; 
+    return (
+      selectedTime.start !== slot.start ||
+      selectedTime.end !== slot.end
+    );
   };
 
   const hasSelectedTime = selectedTime !== null;
-
   const isDisabled = !selectedDate || !selectedTime;
 
   useEffect(() => {
@@ -73,6 +164,23 @@ export default function RescheduleScreen() {
       return () => clearTimeout(timer);
     }
   }, [showModal]);
+  const handleSubmit = async () => {
+    try {
+
+      if (!selectedTime || !selectedDate) return;
+
+      await api.post("/v1/patient/appointments/delay", {
+        disease_id: diseaseId,
+        date: formatDateForAPI(selectedDate),
+        start_time: selectedTime.start,
+        end_time: selectedTime.end,
+      });
+
+      setShowModal(true);
+    } catch (err) {
+      console.log("delay error:", err);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -116,15 +224,31 @@ export default function RescheduleScreen() {
               ))}
 
               {daysArray.map((day, index) => {
-                const isSelected = day !== null && day === selectedDate;
+                const isSelected =
+                  day !== null &&
+                  selectedDate &&
+                  day === selectedDate.getDate() &&
+                  month === selectedDate.getMonth() &&
+                  year === selectedDate.getFullYear();
+
+                const isCurrentApiDate =
+                  day !== null &&
+                  currentApiDate &&
+                  day === currentApiDate.getDate() &&
+                  month === currentApiDate.getMonth() &&
+                  year === currentApiDate.getFullYear();
+
+                const isAvailable =
+                  day !== null &&
+                  (isAvailableDay(day) || isCurrentApiDate);
 
                 return (
                   <TouchableOpacity
                     key={index}
                     style={styles.dayBox}
-                    disabled={!day}
+                    disabled={!day || !isAvailable}
                     onPress={() => {
-                      setSelectedDate(day!);
+                      setSelectedDate(new Date(year, month, day!));
                       setSelectedTime(null);
                     }}
                   >
@@ -132,12 +256,15 @@ export default function RescheduleScreen() {
                       style={[
                         styles.dayInner,
                         isSelected && styles.daySelected,
+                        isCurrentApiDate && styles.dayCurrent,
+                        !isAvailable && styles.dayDisabled
                       ]}
                     >
                       <Text
                         style={[
                           styles.font,
                           isSelected && { color: "white" },
+                          !isAvailable && { color: "#ccc" },
                         ]}
                       >
                         {day || ""}
@@ -151,38 +278,43 @@ export default function RescheduleScreen() {
 
           <Text style={styles.sectionTitle}>เลือกช่วงเวลา</Text>
 
-          {timeSlots.map((time) => {
-            const selected = selectedTime === time;
+          {timeSlots.map((slot) => {
+            const label = `${slot.start} - ${slot.end}`;
+
+            const selected =
+              selectedTime?.start === slot.start &&
+              selectedTime?.end === slot.end;
 
             return (
               <TouchableOpacity
-                key={time}
-                disabled={hasSelectedTime && selectedTime !== time}
+                key={label}
+                disabled={isTimeDisabled(slot)}
                 style={[
                   styles.timeItem,
-                  hasSelectedTime && selectedTime !== time && styles.timeDisabled,
+                  isTimeDisabled(slot) && styles.timeDisabled && styles.timeDisabled
                 ]}
-                onPress={() => toggleTime(time)}
+                onPress={() => toggleTime(slot)}
               >
                 <View style={styles.timeRow}>
                   <View
                     style={[
                       styles.circle,
                       selected && styles.circleSelected,
-                      hasSelectedTime && selectedTime !== time && styles.circleDisabled,
+                      isTimeDisabled(slot) && styles.circleDisabled,
                     ]}
                   >
                     {selected && (
                       <Ionicons name="checkmark" size={16} color="white" />
                     )}
                   </View>
+
                   <Text
                     style={[
                       styles.timeText,
-                      hasSelectedTime && selectedTime !== time && styles.textDisabled, 
+                      isTimeDisabled(slot) && styles.textDisabled,
                     ]}
                   >
-                    {time}
+                    {label}
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -192,7 +324,7 @@ export default function RescheduleScreen() {
 
         <TouchableOpacity
           disabled={isDisabled}
-          onPress={() => setShowModal(true)}
+          onPress={handleSubmit}
           style={[
             styles.button,
             isDisabled && styles.buttonDisabled,
@@ -439,5 +571,11 @@ const styles = StyleSheet.create({
     color: "#6b7280",
     textAlign: "center",
     fontFamily: "IBMPlexSansThai_500Medium",
+  },
+  dayCurrent: {
+    backgroundColor: "#CBCBCB",
+  },
+  dayDisabled: {
+    backgroundColor: "#F3F4F6",
   },
 });
