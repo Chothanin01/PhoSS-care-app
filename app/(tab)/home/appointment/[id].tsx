@@ -1,8 +1,8 @@
 import AppButton from "@/components/appButton";
 import BackButton from "@/components/backButton";
 import { api } from "@/services/api";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -48,27 +48,14 @@ type BasicInfoData = {
 
 const formatThaiDate = (dateString: string) => {
   if (!dateString) return "-";
+
   const date = new Date(dateString);
   const thaiMonths = [
-    "มกราคม",
-    "กุมภาพันธ์",
-    "มีนาคม",
-    "เมษายน",
-    "พฤษภาคม",
-    "มิถุนายน",
-    "กรกฎาคม",
-    "สิงหาคม",
-    "กันยายน",
-    "ตุลาคม",
-    "พฤศจิกายน",
-    "ธันวาคม",
+    "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+    "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
   ];
 
-  const day = date.getDate();
-  const month = thaiMonths[date.getMonth()];
-  const year = date.getFullYear() + 543;
-
-  return `${day} ${month} ${year}`;
+  return `${date.getDate()} ${thaiMonths[date.getMonth()]} ${date.getFullYear() + 543}`;
 };
 
 export default function AppointmentDetail() {
@@ -76,6 +63,7 @@ export default function AppointmentDetail() {
 
   const [appointment, setAppointment] =
     useState<AppointmentDetailData | null>(null);
+
   const [basicInfo, setBasicInfo] =
     useState<BasicInfoData | null>(null);
 
@@ -83,23 +71,16 @@ export default function AppointmentDetail() {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const [appointId, setAppointId] = useState<string>("");
+
   const fetchBasicInfo = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
+      if (!token) return;
 
-      if (!token) {
-        console.log("No token found");
-        return;
-      }
-
-      const response = await api.get(
-        "/v1/patient/basicinfo",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await api.get("/v1/patient/basicinfo", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       return response.data.data;
     } catch (error) {
@@ -108,19 +89,13 @@ export default function AppointmentDetail() {
     }
   };
 
-  const fetchAppointmentDetail = async () => {
+  const fetchAppointmentByDiseaseId = async (disease_id: string) => {
     try {
-      setLoading(true);
-
       const token = await AsyncStorage.getItem("token");
-
-      if (!token) {
-        console.log("No token found");
-        return;
-      }
+      if (!token) return;
 
       const response = await api.get(
-        `/v1/patient/appointments/${id}`,
+        `/v1/patient/appointments/${disease_id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -128,8 +103,36 @@ export default function AppointmentDetail() {
         }
       );
 
-      setAppointment(response.data.data);
-      setStatus(response.data.data.status);
+      const data = response.data.data;
+
+      if (data?.appoint_id) {
+        setAppointId(data.appoint_id);
+      }
+    } catch (error) {
+      console.log("Fetch by disease_id error:", error);
+    }
+  };
+
+  const fetchAppointmentDetail = async () => {
+    try {
+      setLoading(true);
+
+      const token = await AsyncStorage.getItem("token");
+      if (!token) return;
+
+      const response = await api.get(
+        `/v1/patient/appointments/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = response.data.data;
+
+      setAppointment(data);
+      setStatus(data.status);
+
+      fetchAppointmentByDiseaseId(data.disease_id);
 
     } catch (error) {
       console.log("Fetch appointment detail error:", error);
@@ -138,30 +141,44 @@ export default function AppointmentDetail() {
     }
   };
 
+  const cancelDelayRequest = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token || !appointId) return;
+
+      const response = await api.post(
+        `/v1/patient/appointments/${appointId}/canceldelay`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data?.success) {
+        setStatus("cancelled");
+        setShowModal(true);
+      }
+
+    } catch (error) {
+      console.log("Cancel delay error:", error);
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
-      if (id) {
-        await fetchAppointmentDetail();
-      }
+      if (id) await fetchAppointmentDetail();
 
       const basicInfo = await fetchBasicInfo();
-
-      if (basicInfo) {
-        setBasicInfo(basicInfo);
-      }
+      if (basicInfo) setBasicInfo(basicInfo);
     };
 
     loadData();
   }, [id]);
 
-  if (loading) {
-    return <Text>Loading...</Text>;
-  }
-
-  if (!appointment) {
-    return <Text>ไม่พบข้อมูล</Text>;
-  }
-
+  if (loading) return <Text>Loading...</Text>;
+  if (!appointment) return <Text>ไม่พบข้อมูล</Text>;
   const getStatusStyle = (status?: string) => {
     switch (status) {
       case "delay":
@@ -204,6 +221,7 @@ export default function AppointmentDetail() {
     }
   };
 
+
   return (
     <View style={styles.wrapper}>
       <ScrollView style={styles.container}>
@@ -211,7 +229,7 @@ export default function AppointmentDetail() {
 
           <View style={styles.header}>
             <View style={styles.backWrapper}>
-              <BackButton targetPath={`/(tab)/home`}/>
+              <BackButton targetPath={`/(tab)/home`} />
             </View>
 
             <Text style={styles.title}>ใบนัดแพทย์</Text>
@@ -236,7 +254,6 @@ export default function AppointmentDetail() {
             </Text>
           </View>
 
-          {/* Appointment Detail Card */}
           <View style={[styles.card, styles.cardShadow]}>
             <View style={styles.rowBetween}>
               {status === "delay" ? (
@@ -308,8 +325,6 @@ export default function AppointmentDetail() {
 
         </View>
       </ScrollView>
-
-      {/* Bottom Button */}
       <View style={styles.bottomButton}>
         <AppButton
           title={
@@ -322,22 +337,48 @@ export default function AppointmentDetail() {
               ? "danger"
               : "secondary"
           }
-          onPress={() => {
+          onPress={async () => {
             if (status === "delay") {
-              setShowModal(true);
+              try {
+                const token = await AsyncStorage.getItem("token");
 
-              setTimeout(() => {
-                setShowModal(false);
-                setStatus("cancelled");
-              }, 3000);
+                if (!token || !appointId) return;
+
+                const response = await api.patch(
+                  `/v1/patient/appointments/${appointId}/canceldelay`,
+                  {},
+                  {
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                    },
+                  }
+                );
+
+                if (response.data?.success) {
+                  setStatus("cancelled");
+                  setShowModal(true);
+                  setTimeout(() => {
+                    setShowModal(false);
+                  }, 3000);
+                }
+
+              } catch (error) {
+                console.log("Cancel delay error:", error);
+              }
+
             } else {
-              router.push("/(tab)/reSchedule");
+              router.push({
+                pathname: "/(tab)/reSchedule",
+                params: {
+                  disease_id: appointment.disease_id,
+                  appoint_id: appointment.appoint_id,
+                },
+              });
             }
           }}
         />
       </View>
 
-      {/* Modal */}
       <Modal transparent visible={showModal} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
@@ -355,8 +396,10 @@ export default function AppointmentDetail() {
           </View>
         </View>
       </Modal>
+
     </View>
   );
+
 }
 
 const styles = StyleSheet.create({
