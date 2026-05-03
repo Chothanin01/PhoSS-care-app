@@ -4,13 +4,9 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 type Props = {
   id: string;
   name: string;
-  age_years: string;
-  age_months: string;
-  age_days: string;
+  age: string;
   date: string;
-  delay_date?: string;
   time: string;
-  delay_time: string;
   disease: string;
   department: string;
   doctor: string;
@@ -19,29 +15,13 @@ type Props = {
   total: number;
   status?: string;
 };
-  const getStatusText = (status?: string) => {
-    switch (status) {
-      case "delay":
-        return "กำลังพิจารณา";
-
-      case "ongoing":
-        return "";
-
-      default:
-        return "";
-    }
-  };
 
 export default function AppointmentCard({
   id,
   name,
-  age_years,
-  age_months,
-  age_days,
+  age,
   date,
-  delay_date,
   time,
-  delay_time,
   disease,
   department,
   doctor,
@@ -50,8 +30,6 @@ export default function AppointmentCard({
   total,
   status,
 }: Props) {
-  const showDelayStatus = status === "delay";
-
   return (
     <Pressable
       onPress={() => {
@@ -65,46 +43,25 @@ export default function AppointmentCard({
       <View style={styles.headerRow}>
         <Text style={styles.title}>ใบนัดแพทย์</Text>
 
-        {showDelayStatus && (
+        {status && (
           <View style={styles.statusBadge}>
-            <Text style={styles.statusText}>
-              {getStatusText(status)}
-            </Text>
+            <Text style={styles.statusText}>{status}</Text>
           </View>
         )}
       </View>
 
       <View style={styles.rowBetween}>
         <Text style={styles.text}>ชื่อ : {name}</Text>
-        <Text style={styles.text}>อายุ : {age_years} ปี {age_months} เดือน {age_days} วัน</Text>
+        <Text style={styles.text}>อายุ : {age}</Text>
       </View>
 
-      {showDelayStatus ? (
-        <>
-        <view>
-          <Text style={styles.oldDateAndTime}>{date}</Text>
-          <Text style={styles.newDateAndTime}>({delay_date})</Text>
-        </view>
-        </>
-      ) : (
-        <Text style={styles.text}>{date}</Text>
-      )}
-      
-      {showDelayStatus ? (
-        <>
-        <view>
-          <Text style={styles.oldDateAndTime}>{time} น.</Text>
-          <Text style={styles.newDateAndTime}>({delay_time} น.)</Text>
-        </view>
-        </>
-      ) : (
-        <Text style={styles.text}>{time} น.</Text>
-      )}
+      <Text style={styles.text}>นัดวันที่ : {date}</Text>
+      <Text style={styles.text}>เวลา : {time}</Text>
 
-      <Text style={styles.text}>{disease}</Text>
+      <Text style={styles.text}>โรค : {disease}</Text>
       <Text style={styles.text}>นัดเพื่อ : {department}</Text>
       <Text style={styles.text}>สถานที่ : {location}</Text>
-      <Text style={styles.text}>นัดพบแพทย์ : {doctor}</Text>
+      <Text style={styles.text}>นัดแพทย์ : {doctor}</Text>
 
       <View style={styles.dotContainer}>
         {Array.from({ length: total }).map((_, i) => (
@@ -186,19 +143,5 @@ const styles = StyleSheet.create({
     color: "#856404",
     fontSize: 12,
     fontFamily: "IBMPlexSansThai_500Medium",
-  },
-
-  oldDateAndTime: {
-    fontSize: 14,
-    fontFamily: "IBMPlexSansThai_500Medium",
-    textDecorationLine: "line-through",
-    color: "#000",
-    marginRight: 4,
-  },
-
-  newDateAndTime: {
-    fontSize: 14,
-    fontFamily: "IBMPlexSansThai_500Medium",
-    color: "#7A7A7A",
   },
 });

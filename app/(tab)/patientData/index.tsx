@@ -1,125 +1,67 @@
-import AppButton from "@/components/appButton";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 import BackButton from "@/components/backButton";
-import { api } from "@/services/api";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-
-type PatientFullInfo = {
-  patient: {
-    fullname: string;
-    age_years: number;
-    age_months: number;
-    age_days: number;
-    sex: string;
-    idcard: string;
-    rights: string;
-    nationality: string;
-    ethnicity: string;
-    phone_number: string;
-    address: string;
-    allergy: string;
-    weight: number;
-    height: number;
-    bmi: number;
-  };
-  relative: {
-    caretaker?: Relative;
-    kin?: Relative;
-    medicine?: Relative;
-  };
-  officer: {
-    house?: Officer;
-    nurse?: Officer;
-  }
-};
-
-type Relative = {
-  fullname: string;
-  phonenumber: string;
-  address: string;
-  role: string;
-};
-
-type Officer = {
-  fullname: string;
-  role: string;
-}
+import AppButton from "@/components/appButton";
+import { router } from "expo-router";
 
 export default function PatientDataPage() {
-  const { id } = useLocalSearchParams();
-  const [fullInfo, setFullInfo] = useState<PatientFullInfo | null>(null);
-  const [diseases, setDiseases] = useState<string[]>([]);
-
-  const getSexText = (sex?: string) => {
-    switch (sex?.toLowerCase()) {
-      case "male":
-        return "ชาย";
-      case "female":
-        return "หญิง";
-      default:
-        return "-";
-    }
+  const patient = {
+    name: "นายสิริชัย ทักจิวศ์",
+    disease: "วัณโรค",
+    age: "20 ปี 3 เดือน 2 วัน",
+    gender: "ชาย",
+    idCard: "1-1111-11111-11-1",
+    rights: "บัตรทอง",
+    nationality: "ไทย",
+    ethnicity: "ไทย",
+    weight: "50 กก.",
+    height: "179 ซม.",
+    bmi: "22.8 กก./ม²",
+    allergy: "-",
+    phone: "123-456-7890",
+    address: "123/45 ตำบล หนองนา อำเภอ หนองนา จังหวัด นครปฐม 77770",
   };
 
-  const fetchFullInfo = async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-
-      if (!token) {
-        console.log("No token found");
-        return;
-      }
-
-      const response = await api.get(
-        "/v1/patient/fullinfo",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      return response.data.data;
-    } catch (error) {
-      console.log("Fetch full info error:", error);
-      return null;
-    }
+  const relative = {
+    name: "นางอารี บุญรอด",
+    phone: "123-456-7890",
+    address: "123/45 ตำบล หนองนา อำเภอ หนองนา จังหวัด นครปฐม 77770",
   };
 
-  const fetchDiseases = async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-
-      const response = await api.get("/v1/patient/diseases", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const list = response.data.data.map(
-        (d: any) => d.name
-      );
-
-      setDiseases(list);
-    } catch (error) {
-      console.log("Fetch diseases error:", error);
-    }
+  const hospital = {
+    name: "โรงพยาบาลโพธิ์ศรีสุวรรณ",
+    address: "123/45 ตำบล หนองนา อำเภอ หนองนา จังหวัด ศรีสะเกษ 77770",
   };
 
-  useEffect(() => {
-    const loadData = async () => {
-      const fullInfo = await fetchFullInfo();
-      if (fullInfo) setFullInfo(fullInfo);
+  const tbData = {
+    caregivers: [
+      {
+        role: "ผู้ดูแลทำการกินยา",
+        name: "นางสมรัก มั่นคง",
+        phone: "123-456-7890",
+        address: "123/45 ตำบล หนองนา อำเภอ หนองนา จังหวัด นครปฐม 77770",
+      },
+      {
+        role: "ผู้ป้อนยา",
+        name: "นายชัย เจริญ",
+        phone: "123-456-7890",
+        address: "123/45 ตำบล หนองนา อำเภอ หนองนา จังหวัด นครปฐม 77770",
+      },
+    ],
+    hospitalStaff: [
+      {
+        role: "เจ้าหน้าที่เยี่ยมบ้าน",
+        name: "นางสม ฤดน",
+        phone: "123-456-7890",
+      },
+      {
+        role: "เจ้าหน้าที่",
+        name: "xxx xxx",
+        phone: "123-456-7890",
+      },
+    ],
+  };
 
-      await fetchDiseases();
-    };
-
-    loadData();
-  }, [id]);
-
-  const isTB = diseases.includes("วัณโรค");
+  const isTB = patient.disease === "วัณโรค";
 
   return (
     <ScrollView style={styles.container}>
@@ -127,7 +69,7 @@ export default function PatientDataPage() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.backWrapper}>
-          <BackButton targetPath={`/(tab)/home`}/>
+          <BackButton />
         </View>
 
         <Text style={styles.title}>
@@ -139,96 +81,61 @@ export default function PatientDataPage() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>ข้อมูลผู้ป่วย</Text>
 
-        <Text style={styles.text}>{fullInfo?.patient.fullname}</Text>
+        <Text style={styles.text}>{patient.name}</Text>
         <Text style={styles.text}>
-          อายุ : {fullInfo?.patient.age_years} ปี {fullInfo?.patient.age_months} เดือน {fullInfo?.patient.age_days} วัน
-          {"    "}เพศ : {getSexText(fullInfo?.patient.sex)}
+          อายุ : {patient.age}    เพศ : {patient.gender}
         </Text>
-        <Text style={styles.text}>เลขบัตรประชาชน : {fullInfo?.patient.idcard}</Text>
-        <Text style={styles.text}>สิทธิการรักษา : {fullInfo?.patient.rights}</Text>
+        <Text style={styles.text}>เลขบัตรประชาชน : {patient.idCard}</Text>
+        <Text style={styles.text}>สิทธิการรักษา : {patient.rights}</Text>
         <Text style={styles.text}>
-          สัญชาติ : {fullInfo?.patient.nationality}    เชื้อชาติ : {fullInfo?.patient.ethnicity}
+          สัญชาติ : {patient.nationality}    เชื้อชาติ : {patient.ethnicity}
         </Text>
         <Text style={styles.text}>
-          น้ำหนัก : {fullInfo?.patient.weight} กก.    ส่วนสูง : {fullInfo?.patient.height} ซม.
+          น้ำหนัก : {patient.weight}    ส่วนสูง : {patient.height}
         </Text>
-        <Text style={styles.text}>ดัชนีมวลกาย : {fullInfo?.patient.bmi?.toFixed(2)} กก./ม²</Text>
-        <Text style={styles.text}>การแพ้ยา : {fullInfo?.patient.allergy || "-"}</Text>
-        <Text style={styles.text}>เบอร์โทรศัพท์ : {fullInfo?.patient.phone_number}</Text>
-        <Text style={styles.text}>ที่อยู่ : {fullInfo?.patient.address}</Text>
+        <Text style={styles.text}>ดัชนีมวลกาย : {patient.bmi}</Text>
+        <Text style={styles.text}>การแพ้ยา : {patient.allergy}</Text>
+        <Text style={styles.text}>เบอร์โทรศัพท์ : {patient.phone}</Text>
+        <Text style={styles.text}>ที่อยู่ : {patient.address}</Text>
       </View>
 
       {/* Relative */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>ข้อมูลญาติผู้ป่วย</Text>
 
-        {fullInfo?.relative.kin && (
-          <>
-            <Text style={styles.text}>
-              {fullInfo.relative.kin.fullname}
-            </Text>
-            <Text style={styles.text}>
-              เบอร์โทรศัพท์ : {fullInfo.relative.kin.phonenumber}
-            </Text>
-            <Text style={styles.text}>
-              ที่อยู่ : {fullInfo.relative.kin.address}
-            </Text>
-          </>
-        )}
+        <Text style={styles.text}>{relative.name}</Text>
+        <Text style={styles.text}>เบอร์โทรศัพท์ : {relative.phone}</Text>
+        <Text style={styles.text}>ที่อยู่ : {relative.address}</Text>
 
         {isTB &&
-          fullInfo?.relative.caretaker && (
-            <View>
+          tbData.caregivers.map((item, i) => (
+            <View key={i}>
               <View style={styles.divider} />
-              <Text style={styles.specialTitle}>ผู้ดูแลกำกับการกินยา</Text>
+              <Text style={styles.specialTitle}>{item.role}</Text>
 
-              <Text style={styles.text}>{fullInfo.relative.caretaker.fullname}</Text>
-              <Text style={styles.text}>เบอร์โทรศัพท์ : {fullInfo.relative.caretaker.phonenumber}</Text>
-              <Text style={styles.text}>ที่อยู่ : {fullInfo.relative.caretaker.address}</Text>
+              <Text style={styles.text}>{item.name}</Text>
+              <Text style={styles.text}>เบอร์โทรศัพท์ : {item.phone}</Text>
+              <Text style={styles.text}>ที่อยู่ : {item.address}</Text>
             </View>
-          )
-        }
-
-        {isTB &&
-          fullInfo?.relative.medicine && (
-            <View>
-              <View style={styles.divider} />
-              <Text style={styles.specialTitle}>ผู้ป้อนยาผู้ป่วย</Text>
-
-              <Text style={styles.text}>{fullInfo.relative.medicine.fullname}</Text>
-              <Text style={styles.text}>เบอร์โทรศัพท์ : {fullInfo.relative.medicine.phonenumber}</Text>
-              <Text style={styles.text}>ที่อยู่ : {fullInfo.relative.medicine.address}</Text>
-            </View>
-          )
-        }
+          ))}
       </View>
 
       {/* Hospital */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>ข้อมูลโรงพยาบาล</Text>
 
-        <Text style={styles.text}>โรงพยาบาลโพธิ์ศรีสุวรรณ</Text>
-        <Text style={styles.text}>ที่อยู่ : 58 หมู่ 5 ตำบลเสียว อำเภอโพธิ์ศรีสุวรรณ จังหวัดศรีสะเกษ 33120</Text>
-        <Text style={styles.text}>เบอร์โทรศัพท์ : 045-826341</Text>
+        <Text style={styles.text}>{hospital.name}</Text>
+        <Text style={styles.text}>ที่อยู่ : {hospital.address}</Text>
 
         {isTB &&
-          fullInfo?.officer.house && (
-          <View style={styles.staffBox}>
-            <Text style={styles.staffTitle}>
-              เจ้าหน้าที่ที่เยี่ยมบ้าน : {fullInfo.officer.house.fullname}
-            </Text>
-          </View>
-          )
-        }
-        {isTB &&
-          fullInfo?.officer.nurse && (
-          <View style={styles.staffBox}>
-            <Text style={styles.staffTitle}>
-              เจ้าหน้าที่ : {fullInfo.officer.nurse.fullname}
-            </Text>
-          </View>
-          )
-        }
+          tbData.hospitalStaff.map((item, i) => (
+            <View key={i} style={styles.staffBox}>
+              <Text style={styles.staffTitle}>
+                {item.role} : {item.name}
+              </Text>
+              <Text style={styles.text}>เบอร์ : {item.phone}</Text>
+            </View>
+          ))}
       </View>
 
       <View style={styles.bottomButton}>
