@@ -3,7 +3,13 @@ import { MenuPath } from "@/types/navigation";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 type Props = {
   visible: boolean;
@@ -27,10 +33,14 @@ export default function DiseaseModal({
 }: Props) {
   const [diseases, setDiseases] = useState<DiseaseItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [checked, setChecked] = useState(false); 
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const fetchDiseases = async () => {
     try {
       setLoading(true);
+      setChecked(false);
 
       const res = await api.get("/v1/patient/diseases", {
         params: { type: "appoint" },
@@ -38,13 +48,17 @@ export default function DiseaseModal({
 
       const list = res.data?.data || [];
 
-      setDiseases(list);
-
-      console.log("diseases:", list);
+      if (list.length === 0) {
+        onClose();
+        setShowSuccessModal(true);
+      } else {
+        setDiseases(list);
+      }
     } catch (err) {
       console.log("fetch diseases error:", err);
     } finally {
       setLoading(false);
+      setChecked(true);
     }
   };
 
@@ -78,72 +92,107 @@ export default function DiseaseModal({
     }
   }, [visible]);
 
+  useEffect(() => {
+    if (showSuccessModal) {
+      const timer = setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccessModal]);
+
   return (
-    <Modal visible={visible} transparent animationType="fade">
-      <View style={styles.overlay}>
-        <View style={styles.modal}>
-          <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
-            <Ionicons name="close" size={20} color="#666" />
-          </TouchableOpacity>
+    <>
+      <Modal
+        visible={visible && checked && diseases.length > 0}
+        transparent
+        animationType="fade"
+      >
+        <View style={styles.overlay}>
+          <View style={styles.modal}>
+            <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
+              <Ionicons name="close" size={20} color="#666" />
+            </TouchableOpacity>
 
-          <Text style={styles.title}>กรุณาเลือกโรคที่ต้องการ</Text>
+            <Text style={styles.title}>กรุณาเลือกโรคที่ต้องการ</Text>
 
-          {!loading && diseases.length === 0 && (
-            <Text>ไม่มีข้อมูลโรค</Text>
-          )}
+            {diseases.map((item) => {
+              const isActive = selectedDisease === item.disease_id;
 
-          {diseases.map((item) => {
-            const isActive = selectedDisease === item.disease_id;
-
-            return (
-              <TouchableOpacity
-                key={item.disease_id}
-                onPress={() =>
-                  setSelectedDisease(
-                    selectedDisease === item.disease_id
-                      ? null
-                      : item.disease_id
-                  )
-                }
-                style={[
-                  styles.option,
-                  isActive ? styles.optionActive : styles.optionInactive,
-                ]}
-              >
-                <View
+              return (
+                <TouchableOpacity
+                  key={item.disease_id}
+                  onPress={() =>
+                    setSelectedDisease(
+                      isActive ? null : item.disease_id
+                    )
+                  }
                   style={[
-                    styles.radio,
-                    isActive ? styles.radioActive : styles.radioInactive,
+                    styles.option,
+                    isActive
+                      ? styles.optionActive
+                      : styles.optionInactive,
                   ]}
                 >
-                  {isActive && (
-                    <Ionicons name="checkmark" size={14} color="#FFFFFF" />
-                  )}
-                </View>
+                  <View
+                    style={[
+                      styles.radio,
+                      isActive
+                        ? styles.radioActive
+                        : styles.radioInactive,
+                    ]}
+                  >
+                    {isActive && (
+                      <Ionicons
+                        name="checkmark"
+                        size={14}
+                        color="#FFFFFF"
+                      />
+                    )}
+                  </View>
 
-                <Text style={styles.optionText}>{item.name}</Text>
-              </TouchableOpacity>
-            );
-          })}
+                  <Text style={styles.optionText}>{item.name}</Text>
+                </TouchableOpacity>
+              );
+            })}
 
-          <TouchableOpacity
-            disabled={!selectedDisease}
-            onPress={handleConfirm}
-            style={[
-              styles.confirmBtn,
-              selectedDisease
-                ? styles.confirmActive
-                : styles.confirmInactive,
-            ]}
-          >
-            <Text style={styles.confirmText}>ยืนยันการเลือก</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              disabled={!selectedDisease}
+              onPress={handleConfirm}
+              style={[
+                styles.confirmBtn,
+                selectedDisease
+                  ? styles.confirmActive
+                  : styles.confirmInactive,
+              ]}
+            >
+              <Text style={styles.confirmText}>ยืนยันการเลือก</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </Modal>
+      </Modal>
+      <Modal transparent visible={showSuccessModal} animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <View style={styles.iconOuter}>
+              <View style={styles.iconInner}>
+                <Ionicons name="close" size={32} color="white" />
+              </View>
+            </View>
+
+            <Text style={styles.modalTitle}>
+              ไม่มีโรคที่สามารถทำการเลื่อนนัดได้
+            </Text>
+            <Text style={styles.modalDesc}>
+              ใบนัดอยู่ในขั้นตอนพิจารณาจากเจ้าหน้าที่
+            </Text>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
-
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
@@ -233,5 +282,58 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontFamily: "IBMPlexSansThai_600SemiBold",
+  },
+  subtitle: {
+    fontSize: 20,
+    fontFamily: "IBMPlexSansThai_500Medium",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 10,
+  },
+
+  modalBox: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 20,
+    width: "90%",
+    alignItems: "center",
+  },
+
+  iconOuter: {
+    width: 100,
+    height: 100,
+    borderRadius: 999,
+    backgroundColor: "#FEE2E2",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+
+
+  iconInner: {
+    width: 70,
+    height: 70,
+    borderRadius: 999,
+    backgroundColor: "#FB4C4C",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  modalTitle: {
+    fontSize: 16,
+    textAlign: "center",
+    fontFamily: "IBMPlexSansThai_600Semibold",
+  },
+
+  modalDesc: {
+    marginTop: 8,
+    fontSize: 13,
+    color: "#6b7280",
+    textAlign: "center",
+    fontFamily: "IBMPlexSansThai_500Medium",
   },
 });
