@@ -144,6 +144,13 @@ export default function RescheduleScreen() {
       setSelectedTime(slot);
     }
   };
+  const isTimeDisabled = (slot: { start: string; end: string }) => {
+    if (!selectedTime) return false; 
+    return (
+      selectedTime.start !== slot.start ||
+      selectedTime.end !== slot.end
+    );
+  };
 
   const hasSelectedTime = selectedTime !== null;
   const isDisabled = !selectedDate || !selectedTime;
@@ -281,10 +288,10 @@ export default function RescheduleScreen() {
             return (
               <TouchableOpacity
                 key={label}
-                disabled={hasSelectedTime && !selected}
+                disabled={isTimeDisabled(slot)}
                 style={[
                   styles.timeItem,
-                  hasSelectedTime && !selected && styles.timeDisabled,
+                  isTimeDisabled(slot) && styles.timeDisabled && styles.timeDisabled
                 ]}
                 onPress={() => toggleTime(slot)}
               >
@@ -293,6 +300,7 @@ export default function RescheduleScreen() {
                     style={[
                       styles.circle,
                       selected && styles.circleSelected,
+                      isTimeDisabled(slot) && styles.circleDisabled,
                     ]}
                   >
                     {selected && (
@@ -300,7 +308,14 @@ export default function RescheduleScreen() {
                     )}
                   </View>
 
-                  <Text style={styles.timeText}>{label}</Text>
+                  <Text
+                    style={[
+                      styles.timeText,
+                      isTimeDisabled(slot) && styles.textDisabled,
+                    ]}
+                  >
+                    {label}
+                  </Text>
                 </View>
               </TouchableOpacity>
             );
