@@ -3,11 +3,10 @@ import GridMenu from "@/components/home/gridMenu";
 import AppointmentCard from "@/components/home/homeAppointmentCard";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Dimensions, Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { hasUnread } from "@/data/notification";
 import { api } from "@/services/api";
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
 
 type Appointment = {
   appoint_id: string;
@@ -50,6 +49,9 @@ export default function Page() {
 
   const [patientInfo, setPatientInfo] = useState<PatientData | null>(null);
 
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+
+  const notificationCount = hasUnread() ? 1 : 0;
   const formatThaiDate = (dateString: string) => {
     const date = new Date(dateString);
     const thaiMonths = [
@@ -119,151 +121,131 @@ export default function Page() {
     }
   };
 
-  const [hasUnreadNoti, setHasUnreadNoti] = useState(false);
-
-  const fetchUnreadStatus = async () => {
+  const handleLogout = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
 
-      if (!token) return;
-
-      const res = await api.get("/v1/patient/noti/status", {
+      await api.get("/v1/auth/patient/logout", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      setHasUnreadNoti(res.data.has_unread);
-    } catch (err) {
-      console.log("fetch unread error:", err);
-    }
-  };
+      await AsyncStorage.removeItem("token");
 
-  const [hasUnreadNoti, setHasUnreadNoti] = useState(false);
-
-  const fetchUnreadStatus = async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-
-      if (!token) return;
-
-      const res = await api.get("/v1/patient/noti/status", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setHasUnreadNoti(res.data.has_unread);
-    } catch (err) {
-      console.log("fetch unread error:", err);
+      router.replace("/");
+    } catch (error) {
+      console.log("Logout error:", error);
     }
   };
 
   useEffect(() => {
     fetchPatientAppointments();
-    fetchUnreadStatus();
   }, []);
-
-  const notificationCount = hasUnreadNoti ? 1 : 0;
-  
-  useFocusEffect(
-    useCallback(() => {
-      fetchUnreadStatus();
-    }, [])
-  );
 
   return ( 
     <>
-      <ScrollView style={styles.container}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
 
-        {/* Header */}
-        <View style={styles.header}>
-          <Image
-            source={require("@/assets/images/PhossLogo-removebg-preview.png")}
-            style={styles.logo}
-          />
+        <View>
+          {/* Header */}
+          <View style={styles.header}>
+            <Image
+              source={require("@/assets/images/PhossLogo-removebg-preview.png")}
+              style={styles.logo}
+            />
 
-          <View style={styles.headerText}>
-            <Text style={styles.title}>โรงพยาบาลโพธิ์ศรีสุวรรณ</Text>
+            <View style={styles.headerText}>
+              <Text style={styles.title}>โรงพยาบาลโพธิ์ศรีสุวรรณ</Text>
 
-            <View style={styles.underline} />
+              <View style={styles.underline} />
 
-            <Text style={styles.hn}>
-              HN {patientInfo?.hn_number}
-            </Text>
+              <Text style={styles.hn}>
+                HN {patientInfo?.hn_number}
+              </Text>
+            </View>
           </View>
-        </View>
 
-        {/* AppointmentCard */}
-        <View style={styles.cardWrapper}>
-          <ScrollView
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onScroll={(event) => {
-              const x = event.nativeEvent.contentOffset.x;
-              const current = Math.round(x / screenWidth);
-              setIndex(current);
-            }}
-            scrollEventThrottle={16}
-          >
-            {!patientInfo?.appoint || patientInfo.appoint.length === 0 ? (
-              <View
-                style={{
-                  width: screenWidth - 32,
-                  marginHorizontal: 16,
-                  backgroundColor: "#FFFFFF",
-                  borderRadius: 16,
-                  padding: 16,
-                  elevation: 3,
-                }}
-              >
-                <View style={styles.emptyCard}>
-                  <Text style={styles.emptyText}>
-                    คุณยังไม่มีนัดหมาย
-                  </Text>
-                </View>
-              </View>
-            ) : (
-              patientInfo.appoint.map((item) => (
+          {/* AppointmentCard */}
+          <View style={styles.cardWrapper}>
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onScroll={(event) => {
+                const x = event.nativeEvent.contentOffset.x;
+                const current = Math.round(x / screenWidth);
+                setIndex(current);
+              }}
+              scrollEventThrottle={16}
+            >
+              {!patientInfo?.appoint || patientInfo.appoint.length === 0 ? (
                 <View
-                  key={item.appoint_id}
                   style={{
-                    width: screenWidth,
-                    paddingHorizontal: 16,
+                    width: screenWidth - 32,
+                    marginHorizontal: 16,
+                    backgroundColor: "#FFFFFF",
+                    borderRadius: 16,
+                    padding: 16,
+                    elevation: 3,
                   }}
                 >
-                  <AppointmentCard
-                    id={item.disease_id}
-                    key={item.appoint_id}
-                    name={patientInfo.fullname}
-                    age_years={String(patientInfo.age_years)}
-                    age_months={String(patientInfo.age_months)}
-                    age_days={String(patientInfo.age_days)}
-                    date={formatThaiDate(item.date)}
-                    delay_date={formatThaiDate(item.delay_date)}
-                    disease={item.disease_name}
-                    time={`${item.start_time} - ${item.end_time}`}
-                    delay_time={`${item.delay_start_time} - ${item.delay_end_time}`}
-                    department={item.purpose}
-                    location={item.place}
-                    doctor={item.doctor}
-                    index={index}
-                    total={patientInfo.appoint.length}
-                    status={item.status}
-                  />
+                  <View style={styles.emptyCard}>
+                    <Text style={styles.emptyText}>
+                      คุณยังไม่มีนัดหมาย
+                    </Text>
+                  </View>
                 </View>
-              ))
-            )}
-          </ScrollView>
+              ) : (
+                patientInfo.appoint.map((item) => (
+                  <View
+                    key={item.appoint_id}
+                    style={{
+                      width: screenWidth,
+                      paddingHorizontal: 16,
+                    }}
+                  >
+                    <AppointmentCard
+                      id={item.disease_id}
+                      key={item.appoint_id}
+                      name={patientInfo.fullname}
+                      age_years={String(patientInfo.age_years)}
+                      age_months={String(patientInfo.age_months)}
+                      age_days={String(patientInfo.age_days)}
+                      date={formatThaiDate(item.date)}
+                      delay_date={formatThaiDate(item.delay_date)}
+                      disease={item.disease_name}
+                      time={`${item.start_time} - ${item.end_time}`}
+                      delay_time={`${item.delay_start_time} - ${item.delay_end_time}`}
+                      department={item.purpose}
+                      location={item.place}
+                      doctor={item.doctor}
+                      index={index}
+                      total={patientInfo.appoint.length}
+                      status={item.status}
+                    />
+                  </View>
+                ))
+              )}
+            </ScrollView>
+          </View>
+
+          {/* Grid Menu */}
+          <GridMenu
+            items={menuItems}
+            onPressItem={handleMenuPress}
+            notificationCount={notificationCount}
+          />
         </View>
 
-        {/* Grid Menu */}
-        <GridMenu
-          items={menuItems}
-          onPressItem={handleMenuPress}
-          notificationCount={notificationCount}
-        />
+        <View style={styles.logoutWrapper}>
+          <Text
+            style={styles.logoutText}
+            onPress={() => setLogoutModalVisible(true)}
+          >
+            ออกจากระบบ
+          </Text>
+        </View>
 
       </ScrollView>
 
@@ -274,6 +256,33 @@ export default function Page() {
         setSelectedDisease={setSelectedDisease}
         targetPath={targetPath}
       />
+
+      {logoutModalVisible && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>ยืนยันการออกจากระบบ</Text>
+            <Text style={styles.modalDesc}>
+              คุณต้องการออกจากระบบใช่หรือไม่?
+            </Text>
+
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setLogoutModalVisible(false)}
+              >
+                <Text style={styles.cancelText}>ยกเลิก</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={handleLogout}
+              >
+                <Text style={styles.confirmText}>ยืนยัน</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </>
   );
 }
@@ -282,7 +291,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#EBF7FF",
-    padding: 16,
   },
 
   header: {
@@ -324,8 +332,8 @@ const styles = StyleSheet.create({
   },
 
   cardWrapper: {
-    marginBottom: 16,
     marginHorizontal: -16,
+    marginBottom: 16,
   },
 
   emptyCard: {
@@ -342,5 +350,87 @@ const styles = StyleSheet.create({
     fontFamily: "IBMPlexSansThai_500Medium",
     color: "#7A7A7A",
     marginTop: 8,
+  },
+
+  contentContainer: {
+    flexGrow: 1,
+    justifyContent: "space-between",
+    padding: 16,
+    paddingBottom: 30,
+  },
+
+  logoutWrapper: {
+    alignItems: "center",
+    marginTop: 20,
+  },
+
+  logoutText: {
+    fontSize: 20,
+    color: "#05548D",
+    fontFamily: "IBMPlexSansThai_600SemiBold",
+    textDecorationLine: "underline",
+  },
+
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  modalBox: {
+    width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+  },
+
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: "IBMPlexSansThai_700Bold",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+
+  modalDesc: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: "center",
+    fontFamily: "IBMPlexSansThai_600Semibold",
+  },
+
+  modalButtonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
+  cancelButton: {
+    marginRight: 12,
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 10,
+    backgroundColor: "#FB4C4C",
+    borderRadius: 8,
+  },
+
+  confirmButton: {
+    backgroundColor: "#05548D",
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginLeft: 12,
+  },
+
+  cancelText: {
+    color: "#fff",
+  },
+
+  confirmText: {
+    color: "#fff",
   },
 });
