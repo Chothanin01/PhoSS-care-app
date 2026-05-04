@@ -17,6 +17,7 @@ type Props = {
   selectedDisease: string | null;
   setSelectedDisease: (val: string | null) => void;
   targetPath: MenuPath | null;
+  mode: "appoint" | "history"; 
 };
 
 type DiseaseItem = {
@@ -30,11 +31,11 @@ export default function DiseaseModal({
   selectedDisease,
   setSelectedDisease,
   targetPath,
+  mode, 
 }: Props) {
   const [diseases, setDiseases] = useState<DiseaseItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [checked, setChecked] = useState(false); 
-
+  const [checked, setChecked] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const fetchDiseases = async () => {
@@ -42,18 +43,27 @@ export default function DiseaseModal({
       setLoading(true);
       setChecked(false);
 
-      const res = await api.get("/v1/patient/diseases", {
-        params: { type: "appoint" },
+      const url =
+        mode === "appoint"
+          ? "/v1/patient/diseases"
+          : "/v1/patient/diseases";
+
+      const res = await api.get(url, {
+        params:
+          mode === "appoint"
+            ? { type: "appoint" }
+            : {},
       });
 
       const list = res.data?.data || [];
 
-      if (list.length === 0) {
+      if (mode === "appoint" && list.length === 0) {
         onClose();
         setShowSuccessModal(true);
-      } else {
-        setDiseases(list);
+        return;
       }
+
+      setDiseases(list);
     } catch (err) {
       console.log("fetch diseases error:", err);
     } finally {
@@ -66,16 +76,23 @@ export default function DiseaseModal({
     if (visible) {
       fetchDiseases();
     }
-  }, [visible]);
+  }, [visible, mode]); 
 
   const handleConfirm = () => {
     if (!selectedDisease || !targetPath) return;
+
+    const selected = diseases.find(
+      (d) => d.disease_id === selectedDisease
+    );
 
     onClose();
 
     router.push({
       pathname: targetPath,
-      params: { disease_id: selectedDisease },
+      params: {
+        disease_id: selectedDisease,
+        disease_name: selected?.name,
+      },
     });
 
     setSelectedDisease(null);
@@ -96,7 +113,7 @@ export default function DiseaseModal({
     if (showSuccessModal) {
       const timer = setTimeout(() => {
         setShowSuccessModal(false);
-      }, 5000);
+      }, 3000);
 
       return () => clearTimeout(timer);
     }
@@ -115,7 +132,11 @@ export default function DiseaseModal({
               <Ionicons name="close" size={20} color="#666" />
             </TouchableOpacity>
 
-            <Text style={styles.title}>กรุณาเลือกโรคที่ต้องการ</Text>
+            <Text style={styles.title}>
+              {mode === "appoint"
+                ? "เลือกโรคเพื่อเลื่อนนัด"
+                : "เลือกโรคเพื่อดูประวัติ"}
+            </Text>
 
             {diseases.map((item) => {
               const isActive = selectedDisease === item.disease_id;
@@ -172,6 +193,7 @@ export default function DiseaseModal({
           </View>
         </View>
       </Modal>
+
       <Modal transparent visible={showSuccessModal} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
@@ -182,10 +204,10 @@ export default function DiseaseModal({
             </View>
 
             <Text style={styles.modalTitle}>
-              ไม่มีโรคที่สามารถทำการเลื่อนนัดได้
+              ไม่มีโรคที่สามารถเลื่อนนัดได้
             </Text>
             <Text style={styles.modalDesc}>
-              ใบนัดอยู่ในขั้นตอนพิจารณาจากเจ้าหน้าที่
+              ใบนัดอยู่ในขั้นตอนพิจารณาจากทางเจ้าหน้าที่
             </Text>
           </View>
         </View>

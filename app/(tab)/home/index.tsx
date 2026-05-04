@@ -50,6 +50,8 @@ export default function Page() {
   const [patientInfo, setPatientInfo] = useState<PatientData | null>(null);
 
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [mode, setMode] = useState<"appoint" | "history">("appoint");
+  const [loading, setLoading] = useState(true);
 
   const notificationCount = hasUnread() ? 1 : 0;
   const formatThaiDate = (dateString: string) => {
@@ -88,15 +90,22 @@ export default function Page() {
   type MenuPath = (typeof menuItems)[number]["path"];
 
   const handleMenuPress = (path: MenuPath) => {
-    const needDisease = ["/(tab)/reSchedule", "/(tab)/medicalHis"];
+  if (path === "/(tab)/reSchedule") {
+    setMode("appoint"); // ✅ ต้องมี
+    setTargetPath(path);
+    setModalVisible(true);
+    return;
+  }
 
-    if (needDisease.includes(path)) {
-      setTargetPath(path);
-      setModalVisible(true);
-    } else {
-      router.push(path);
-    }
-  };
+  if (path === "/(tab)/medicalHis") {
+    setMode("history"); // ✅ ต้องมี
+    setTargetPath(path);
+    setModalVisible(true);
+    return;
+  }
+
+  router.push(path);
+};
 
   const fetchPatientAppointments = async () => {
     try {
@@ -143,7 +152,7 @@ export default function Page() {
     fetchPatientAppointments();
   }, []);
 
-  return ( 
+  return (
     <>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
 
@@ -255,6 +264,7 @@ export default function Page() {
         selectedDisease={selectedDisease}
         setSelectedDisease={setSelectedDisease}
         targetPath={targetPath}
+        mode={mode} // 👈 ต้องส่ง
       />
 
       {logoutModalVisible && (
