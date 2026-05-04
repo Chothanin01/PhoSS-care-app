@@ -5,8 +5,9 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Dimensions, Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { hasUnread } from "@/data/notification";
 import { api } from "@/services/api";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 type Appointment = {
   appoint_id: string;
@@ -49,7 +50,6 @@ export default function Page() {
 
   const [patientInfo, setPatientInfo] = useState<PatientData | null>(null);
 
-  const notificationCount = hasUnread() ? 1 : 0;
   const formatThaiDate = (dateString: string) => {
     const date = new Date(dateString);
     const thaiMonths = [
@@ -119,9 +119,58 @@ export default function Page() {
     }
   };
 
+  const [hasUnreadNoti, setHasUnreadNoti] = useState(false);
+
+  const fetchUnreadStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) return;
+
+      const res = await api.get("/v1/patient/noti/status", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setHasUnreadNoti(res.data.has_unread);
+    } catch (err) {
+      console.log("fetch unread error:", err);
+    }
+  };
+
+  const [hasUnreadNoti, setHasUnreadNoti] = useState(false);
+
+  const fetchUnreadStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) return;
+
+      const res = await api.get("/v1/patient/noti/status", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setHasUnreadNoti(res.data.has_unread);
+    } catch (err) {
+      console.log("fetch unread error:", err);
+    }
+  };
+
   useEffect(() => {
     fetchPatientAppointments();
+    fetchUnreadStatus();
   }, []);
+
+  const notificationCount = hasUnreadNoti ? 1 : 0;
+  
+  useFocusEffect(
+    useCallback(() => {
+      fetchUnreadStatus();
+    }, [])
+  );
 
   return ( 
     <>

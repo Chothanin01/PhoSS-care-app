@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,86 +9,91 @@ import {
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import BackButton from "@/components/backButton";
+import { api } from "@/services/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type NotificationItem = {
-  id: number;
-  title: string;
-  description: string;
-  time: string;
-  isRead: boolean;
-  type: "medical" | "normal";
+  id: string;
+  header: string;
+  body: string;
+  created_at: string;
+  is_read: boolean;
+  disease_id?: string;
 };
 
 export default function NotificationPage() {
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: 1,
-      title: "ใบรับรองแพทย์",
-      description: "ระบบได้ยื่นคำขอใบรับรองแพทย์ไปแล้ว",
-      time: "5 นาทีที่ผ่านมา",
-      isRead: false,
-      type: "medical",
-    },
-    {
-      id: 2,
-      title: "เอกสารรับรอง",
-      description: "ระบบได้ยื่นคำขอเอกสารไปแล้ว",
-      time: "10 ชั่วโมงก่อน",
-      isRead: true,
-      type: "normal",
-    },
-    {
-      id: 3,
-      title: "การเลื่อนนัด",
-      description: "ระบบได้ยืนยันการเลื่อนนัดของคุณแล้ว",
-      time: "18 ชั่วโมงก่อน",
-      isRead: true,
-      type: "normal",
-    },
-    {
-      id: 4,
-      title: "คุณมีนัดในอีก 2 วันข้างหน้า",
-      description: "มะรืนคุณมีนัดกับนพ. สมชาย เวลา 13:00 น.",
-      time: "2 วันที่แล้ว",
-      isRead: true,
-      type: "normal",
-    },
-    {
-      id: 5,
-      title: "การเลื่อนนัด",
-      description: "ระบบได้ปฏิเสธการเลื่อนนัดของคุณ กรุณาเลื่อนนัดใหม่อีกครั้ง",
-      time: "5 วันที่แล้ว",
-      isRead: false,
-      type: "normal",
-    },
-    {
-      id: 6,
-      title: "เอกสารรับรอง",
-      description: "โรงพยาบาลได้เตรียมเอกสารของคุณเเล้ว",
-      time: "6 วันที่แล้ว",
-      isRead: true,
-      type: "normal",
-    },
-  ]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
-  const handlePress = (item: NotificationItem) => {
+  const getNotifications = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        console.log("No token found");
+        return;
+      }
+
+      const res = await api.get("/v1/patient/noti",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setNotifications(res.data.data);
+
+    } catch (err) {
+      console.log("fetch error:", err);
+    }
+  };
+
+  const markAsRead = async (id: string) => {
+    try {
+      await api.patch(`/v1/patient/noti/${id}/read`);
+    } catch (err) {
+      console.log("mark read error:", err);
+    }
+  };
+
+  useEffect(() => {
+    getNotifications();
+  }, []);
+
+  const handlePress = async (item: NotificationItem) => {
+    await markAsRead(item.id);
+
     setNotifications((prev) =>
       prev.map((noti) =>
-        noti.id === item.id ? { ...noti, isRead: true } : noti
+        noti.id === item.id ? { ...noti, is_read: true } : noti
       )
     );
 
-    if (item.type === "medical") {
-      router.push("/document");
+    if (item.header === "การเลื่อนนัด" && item.disease_id) {
+      router.push(`/(tab)/home/appointment/${item.disease_id}`);
     }
+  };
+
+  const formatTimeAgo = (dateString: string) => {
+    const now = new Date();
+    const created = new Date(dateString);
+
+    const diffMs = now.getTime() - created.getTime();
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+
+    if (diffSec < 60) return "เมื่อสักครู่";
+    if (diffMin < 60) return `${diffMin} นาทีที่ผ่านมา`;
+    if (diffHour < 24) return `${diffHour} ชั่วโมงที่ผ่านมา`;
+    if (diffDay < 7) return `${diffDay} วันที่ผ่านมา`;
+
+    return created.toLocaleDateString("th-TH");
   };
 
   return (
     <View style={styles.wrapper}>
-      <ScrollView
-        style={styles.container}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.backWrapper}>
@@ -102,44 +107,41 @@ export default function NotificationPage() {
           </Text>
         </View>
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
+        <ScrollView contentContainerStyle={styles.scrollContent}>
           {notifications.map((item) => (
             <View key={item.id} style={styles.cardWrapper}>
-            <TouchableOpacity
-              key={item.id}
-              style={[
+              <TouchableOpacity
+                style={[
                 styles.card,
                 {
-                  backgroundColor: item.isRead ? "#EDEDED" : "#FFFFFF",
+                  backgroundColor: item.is_read ? "#EDEDED" : "#FFFFFF",
                 },
               ]}
               activeOpacity={0.8}
               onPress={() => handlePress(item)}
-            >
-              <View style={styles.leftSection}>
-                <View style={styles.iconBox}>
-                  <Ionicons
-                    name="bag-add-outline"
-                    size={22}
-                    color="#0B5EA8"
-                  />
+              >
+                <View style={styles.leftSection}>
+                  <View style={styles.iconBox}>
+                    <Ionicons
+                      name="notifications-outline"
+                      size={22}
+                      color="#0B5EA8"
+                    />
+                  </View>
+
+                  <View style={styles.textSection}>
+                    <Text style={styles.titleNoti}>{item.header}</Text>
+                    <Text style={styles.description}>{item.body}</Text>
+                  </View>
                 </View>
 
-                <View style={styles.textSection}>
-                  <Text style={styles.titleNoti}>{item.title}</Text>
-                  <Text style={styles.description}>{item.description}</Text>
+                <View style={styles.rightSection}>
+                  <Text style={styles.time}>{formatTimeAgo(item.created_at)}</Text>
                 </View>
-              </View>
 
-              <View style={styles.rightSection}>
-                <Text style={styles.time}>{item.time}</Text>
-              </View>
+              </TouchableOpacity>
 
-            </TouchableOpacity>
-            {!item.isRead && <View style={styles.redDot} />}
+              {!item.is_read && <View style={styles.redDot} />}
             </View>
           ))}
         </ScrollView>
