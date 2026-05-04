@@ -133,22 +133,29 @@ export default function MedicalHisPage() {
             ? "ไม่ระบุวันที่"
             : item.date,
         Note: item.note || "-",
-
-        status:
-          item.color_status === "green"
-            ? "ปกติ"
-            : item.color_status === "yellow"
-              ? "เฝ้าระวัง"
-              : "อันตราย",
-
         DoctorName: item.doctor,
+        status:
+          item.color_status === "dark_green"
+            ? "สีเขียวเข้ม"
+            : item.color_status === "yellow"
+              ? "สีเหลือง"
+              : item.color_status === "orange"
+                ? "สีส้ม"
+                : item.color_status === "red"
+                  ? "สีแดง"
+                  : "ไม่ระบุ",
+
 
         ColorStatus:
-          item.color_status === "green"
-            ? "#58AD46"
+          item.color_status === "dark_green"
+            ? "#2E7D32"
             : item.color_status === "yellow"
               ? "#FFD57B"
-              : "#FF0505",
+              : item.color_status === "orange"
+                ? "#FF9800"
+                : item.color_status === "red"
+                  ? "#FF0505"
+                  : "#E5E7EB",
       }));
 
       setHistoryData(formatted);
@@ -280,17 +287,19 @@ export default function MedicalHisPage() {
                 การรักษา : {item.Note}
               </Text>
 
-              <View style={styles.statusRow}>
-                <Text style={styles.text}>สถานะ : </Text>
-                <View
-                  style={[
-                    styles.statusBadge,
-                    { backgroundColor: item.ColorStatus },
-                  ]}
-                >
-                  <Text style={styles.statusText}>{item.status}</Text>
+              {disease_name !== "วัณโรค" && (
+                <View style={styles.statusRow}>
+                  <Text style={styles.text}>สถานะ : </Text>
+                  <View
+                    style={[
+                      styles.statusBadge,
+                      { backgroundColor: item.ColorStatus },
+                    ]}
+                  >
+                    <Text style={styles.statusText}>{item.status}</Text>
+                  </View>
                 </View>
-              </View>
+              )}
 
               <View style={styles.bottomRow}>
                 <Text style={styles.text}>
@@ -438,9 +447,11 @@ const styles = StyleSheet.create({
   },
 
   statusText: {
-    color: "#fff",
-    fontFamily: "IBMPlexSansThai_500Medium",
+    color: "#000000",
+    fontSize: 14,
+    fontFamily: "IBMPlexSansThai_600SemiBold",
   },
+
 
   bottomRow: {
     flexDirection: "row",

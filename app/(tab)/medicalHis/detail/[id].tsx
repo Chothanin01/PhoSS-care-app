@@ -124,9 +124,8 @@ export default function MedicalHistoryDetailPage() {
 
         doctor: item.doctor,
         treatment: item.note || "-",
-        purpose: item.purpose,
         symptom: item.symptom || "-",
-
+        note: item.note || "-",
         pulse: item.health?.pulse ?? "-",
         pressure: item.health?.pressure ?? "-",
         height: item.health?.height ?? "-",
@@ -136,8 +135,28 @@ export default function MedicalHistoryDetailPage() {
 
         nextId: item.next_appoint_id ?? null,
         prevId: item.prev_appoint_id ?? null,
+        status:
+          item.color_status === "dark_green"
+            ? "สีเขียวเข้ม"
+            : item.color_status === "yellow"
+              ? "สีเหลือง"
+              : item.color_status === "orange"
+                ? "สีส้ม"
+                : item.color_status === "red"
+                  ? "สีแดง"
+                  : "ไม่ระบุ",
 
-        colorStatus: item.color_status, 
+        ColorStatus:
+          item.color_status === "dark_green"
+            ? "#2E7D32"
+            : item.color_status === "yellow"
+              ? "#FFD57B"
+              : item.color_status === "orange"
+                ? "#FF9800"
+                : item.color_status === "red"
+                  ? "#FF0505"
+                  : "#E5E7EB",
+
       });
     } catch (err) {
       console.log("medical detail error:", err);
@@ -170,7 +189,7 @@ export default function MedicalHistoryDetailPage() {
       },
     });
   };
-   if (loading || !data) {
+  if (loading || !data) {
     return (
       <View style={styles.wrapper}>
         <Text>Loading...</Text>
@@ -226,91 +245,106 @@ export default function MedicalHistoryDetailPage() {
               <Text style={styles.cardTitle}>
                 ครั้งที่ {data.no}
               </Text>
+
               <Text style={styles.text}>
                 วันที่ตรวจ : {formatDateThai(data.date)}
               </Text>
+
               <Text style={styles.text}>
                 ผู้ตรวจ : {data.doctor}
               </Text>
             </View>
+
             <View style={styles.card}>
               <Text style={styles.cardTitle}>
                 ตรวจร่างกายทั่วไป
               </Text>
+
               <Text style={styles.text}>
-                ชีพจร : {data.pulse}  ครั้ง/นาที         น้ำหนัก : {data.weight} กก.
+                ชีพจร : {data.pulse} ครั้ง/นาที น้ำหนัก : {data.weight} กก.
               </Text>
+
               <Text style={styles.text}>
                 ความดัน : {data.pressure} มม./ปรอท
               </Text>
+
               <Text style={styles.text}>
                 ส่วนสูง : {data.height} ซม.
               </Text>
+
               <Text style={styles.text}>
                 ดัชนีมวลกาย : {data.bmi} กก./ม²
               </Text>
             </View>
+
             <View style={styles.card}>
               <Text style={styles.cardTitle}>การรักษา</Text>
-              <Text style={styles.text}>{data.purpose}
-              </Text>
+              <Text style={styles.text}>{data.note}</Text>
             </View>
+
             <View style={styles.card}>
               <Text style={styles.text}>
                 อาการ : {data.symptom}
               </Text>
+
               <Text style={styles.text}>
                 ระดับน้ำตาล : {data.sugar} มก./ดล.
               </Text>
-              <View style={styles.statusRow}>
-                <Text style={styles.text}>สถานะ : </Text>
-                <View
-                style={[
-                 styles.statusBadge,
-                 { backgroundColor: data.colorStatus },
-                 ]}
-                 >
-                  <Text style={styles.statusText}>
-                    {data.status}
-                  </Text>
+
+              {disease_name !== "วัณโรค" && (
+                <View style={styles.statusRow}>
+                  <Text style={styles.text}>สถานะ : </Text>
+
+                  <View
+                    style={[
+                      styles.statusBadge,
+                      { backgroundColor: data.ColorStatus },
+                    ]}
+                  >
+                    <Text style={styles.statusText}>
+                      {data.status}
+                    </Text>
+                  </View>
                 </View>
-              </View>
+              )}
             </View>
           </>
         )}
       </ScrollView>
-      {!isVaccine && (
-        <View style={styles.bottomButton}>
-          <TouchableOpacity
-            style={[
-              styles.navButton,
-              !data.prevId && styles.disabledButton,
-            ]}
-            disabled={!data.prevId}
-            onPress={goToPrevious}
-          >
-            <View style={styles.buttonContent}>
-              <Ionicons name="caret-back-outline" size={22} color="#05548D" />
-              <Text style={styles.navText}>นัดครั้งก่อน</Text>
-            </View>
-          </TouchableOpacity>
+      {
+        !isVaccine && (
+          <View style={styles.bottomButton}>
+            <TouchableOpacity
+              style={[
+                styles.navButton,
+                !data.prevId && styles.disabledButton,
+              ]}
+              disabled={!data.prevId}
+              onPress={goToPrevious}
+            >
+              <View style={styles.buttonContent}>
+                <Ionicons name="caret-back-outline" size={22} color="#05548D" />
+                <Text style={styles.navText}>นัดครั้งก่อน</Text>
+              </View>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.navButton,
-              !data.nextId && styles.disabledButton,
-            ]}
-            disabled={!data.nextId}
-            onPress={goToNext}
-          >
-            <View style={styles.buttonContent}>
-              <Text style={styles.navText}>นัดถัดไป</Text>
-              <Ionicons name="caret-forward-outline" size={22} color="#05548D" />
-            </View>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+            <TouchableOpacity
+              style={[
+                styles.navButton,
+                !data.nextId && styles.disabledButton,
+              ]}
+              disabled={!data.nextId}
+              onPress={goToNext}
+            >
+              <View style={styles.buttonContent}>
+                <Text style={styles.navText}>นัดถัดไป</Text>
+                <Ionicons name="caret-forward-outline" size={22} color="#05548D" />
+              </View>
+            </TouchableOpacity>
+          </View>
+        )
+      }
+    </View >
   );
 }
 /* ------------------ STYLE ------------------ */
@@ -372,7 +406,7 @@ const styles = StyleSheet.create({
   },
 
   statusText: {
-    color: "#fff",
+    color: "#000000",
     fontSize: 14,
     fontFamily: "IBMPlexSansThai_600SemiBold",
   },
