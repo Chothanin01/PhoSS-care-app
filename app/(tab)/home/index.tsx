@@ -3,7 +3,7 @@ import GridMenu from "@/components/home/gridMenu";
 import AppointmentCard from "@/components/home/homeAppointmentCard";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Dimensions, Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { hasUnread } from "@/data/notification";
 import { api } from "@/services/api";
@@ -48,6 +48,8 @@ export default function Page() {
   const [targetPath, setTargetPath] = useState<MenuPath | null>(null);
 
   const [patientInfo, setPatientInfo] = useState<PatientData | null>(null);
+
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
   const notificationCount = hasUnread() ? 1 : 0;
   const formatThaiDate = (dateString: string) => {
@@ -119,13 +121,31 @@ export default function Page() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      await api.get("/v1/auth/patient/logout", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      await AsyncStorage.removeItem("token");
+
+      router.replace("/");
+    } catch (error) {
+      console.log("Logout error:", error);
+    }
+  };
+
   useEffect(() => {
     fetchPatientAppointments();
   }, []);
 
   return ( 
     <>
-      <ScrollView style={styles.container}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
 
         {/* Header */}
         <View style={styles.header}>
@@ -216,6 +236,15 @@ export default function Page() {
           notificationCount={notificationCount}
         />
 
+        <View style={styles.logoutWrapper}>
+          <Text
+            style={styles.logoutText}
+            onPress={() => setLogoutModalVisible(true)}
+          >
+            ออกจากระบบ
+          </Text>
+        </View>
+
       </ScrollView>
 
       <DiseaseModal
@@ -225,6 +254,33 @@ export default function Page() {
         setSelectedDisease={setSelectedDisease}
         targetPath={targetPath}
       />
+
+      {logoutModalVisible && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>ยืนยันการออกจากระบบ</Text>
+            <Text style={styles.modalDesc}>
+              คุณต้องการออกจากระบบใช่หรือไม่?
+            </Text>
+
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setLogoutModalVisible(false)}
+              >
+                <Text style={styles.cancelText}>ยกเลิก</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={handleLogout}
+              >
+                <Text style={styles.confirmText}>ยืนยัน</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </>
   );
 }
@@ -239,7 +295,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: -60,
   },
 
   headerText: {
@@ -275,8 +331,8 @@ const styles = StyleSheet.create({
   },
 
   cardWrapper: {
-    marginBottom: 16,
     marginHorizontal: -16,
+    marginBottom: -40,
   },
 
   emptyCard: {
@@ -293,5 +349,86 @@ const styles = StyleSheet.create({
     fontFamily: "IBMPlexSansThai_500Medium",
     color: "#7A7A7A",
     marginTop: 8,
+  },
+
+  contentContainer: {
+    flexGrow: 1,
+    justifyContent: "space-between",
+    paddingBottom: 20,
+  },
+
+  logoutWrapper: {
+    alignItems: "center",
+    marginTop: 20,
+  },
+
+  logoutText: {
+    fontSize: 20,
+    color: "#05548D",
+    fontFamily: "IBMPlexSansThai_600SemiBold",
+    textDecorationLine: "underline",
+  },
+
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  modalBox: {
+    width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+  },
+
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: "IBMPlexSansThai_700Bold",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+
+  modalDesc: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: "center",
+    fontFamily: "IBMPlexSansThai_600Semibold",
+  },
+
+  modalButtonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
+  cancelButton: {
+    marginRight: 12,
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 10,
+    backgroundColor: "#FB4C4C",
+    borderRadius: 8,
+  },
+
+  confirmButton: {
+    backgroundColor: "#05548D",
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginLeft: 12,
+  },
+
+  cancelText: {
+    color: "#fff",
+  },
+
+  confirmText: {
+    color: "#fff",
   },
 });
