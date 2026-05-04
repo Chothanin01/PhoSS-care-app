@@ -247,15 +247,6 @@ export default function Page() {
           </Text>
         </View>
 
-        <View style={styles.logoutWrapper}>
-          <Text
-            style={styles.logoutText}
-            onPress={() => setLogoutModalVisible(true)}
-          >
-            ออกจากระบบ
-          </Text>
-        </View>
-
       </ScrollView>
 
       <DiseaseModal
@@ -305,7 +296,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: -60,
+    marginBottom: 16,
   },
 
   headerText: {
