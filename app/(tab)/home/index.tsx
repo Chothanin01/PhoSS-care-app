@@ -147,94 +147,105 @@ export default function Page() {
     <>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
 
-        {/* Header */}
-        <View style={styles.header}>
-          <Image
-            source={require("@/assets/images/PhossLogo-removebg-preview.png")}
-            style={styles.logo}
-          />
+        <View>
+          {/* Header */}
+          <View style={styles.header}>
+            <Image
+              source={require("@/assets/images/PhossLogo-removebg-preview.png")}
+              style={styles.logo}
+            />
 
-          <View style={styles.headerText}>
-            <Text style={styles.title}>โรงพยาบาลโพธิ์ศรีสุวรรณ</Text>
+            <View style={styles.headerText}>
+              <Text style={styles.title}>โรงพยาบาลโพธิ์ศรีสุวรรณ</Text>
 
-            <View style={styles.underline} />
+              <View style={styles.underline} />
 
-            <Text style={styles.hn}>
-              HN {patientInfo?.hn_number}
-            </Text>
+              <Text style={styles.hn}>
+                HN {patientInfo?.hn_number}
+              </Text>
+            </View>
           </View>
-        </View>
 
-        {/* AppointmentCard */}
-        <View style={styles.cardWrapper}>
-          <ScrollView
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onScroll={(event) => {
-              const x = event.nativeEvent.contentOffset.x;
-              const current = Math.round(x / screenWidth);
-              setIndex(current);
-            }}
-            scrollEventThrottle={16}
-          >
-            {!patientInfo?.appoint || patientInfo.appoint.length === 0 ? (
-              <View
-                style={{
-                  width: screenWidth - 32,
-                  marginHorizontal: 16,
-                  backgroundColor: "#FFFFFF",
-                  borderRadius: 16,
-                  padding: 16,
-                  elevation: 3,
-                }}
-              >
-                <View style={styles.emptyCard}>
-                  <Text style={styles.emptyText}>
-                    คุณยังไม่มีนัดหมาย
-                  </Text>
-                </View>
-              </View>
-            ) : (
-              patientInfo.appoint.map((item) => (
+          {/* AppointmentCard */}
+          <View style={styles.cardWrapper}>
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onScroll={(event) => {
+                const x = event.nativeEvent.contentOffset.x;
+                const current = Math.round(x / screenWidth);
+                setIndex(current);
+              }}
+              scrollEventThrottle={16}
+            >
+              {!patientInfo?.appoint || patientInfo.appoint.length === 0 ? (
                 <View
-                  key={item.appoint_id}
                   style={{
-                    width: screenWidth,
-                    paddingHorizontal: 16,
+                    width: screenWidth - 32,
+                    marginHorizontal: 16,
+                    backgroundColor: "#FFFFFF",
+                    borderRadius: 16,
+                    padding: 16,
+                    elevation: 3,
                   }}
                 >
-                  <AppointmentCard
-                    id={item.disease_id}
-                    key={item.appoint_id}
-                    name={patientInfo.fullname}
-                    age_years={String(patientInfo.age_years)}
-                    age_months={String(patientInfo.age_months)}
-                    age_days={String(patientInfo.age_days)}
-                    date={formatThaiDate(item.date)}
-                    delay_date={formatThaiDate(item.delay_date)}
-                    disease={item.disease_name}
-                    time={`${item.start_time} - ${item.end_time}`}
-                    delay_time={`${item.delay_start_time} - ${item.delay_end_time}`}
-                    department={item.purpose}
-                    location={item.place}
-                    doctor={item.doctor}
-                    index={index}
-                    total={patientInfo.appoint.length}
-                    status={item.status}
-                  />
+                  <View style={styles.emptyCard}>
+                    <Text style={styles.emptyText}>
+                      คุณยังไม่มีนัดหมาย
+                    </Text>
+                  </View>
                 </View>
-              ))
-            )}
-          </ScrollView>
+              ) : (
+                patientInfo.appoint.map((item) => (
+                  <View
+                    key={item.appoint_id}
+                    style={{
+                      width: screenWidth,
+                      paddingHorizontal: 16,
+                    }}
+                  >
+                    <AppointmentCard
+                      id={item.disease_id}
+                      key={item.appoint_id}
+                      name={patientInfo.fullname}
+                      age_years={String(patientInfo.age_years)}
+                      age_months={String(patientInfo.age_months)}
+                      age_days={String(patientInfo.age_days)}
+                      date={formatThaiDate(item.date)}
+                      delay_date={formatThaiDate(item.delay_date)}
+                      disease={item.disease_name}
+                      time={`${item.start_time} - ${item.end_time}`}
+                      delay_time={`${item.delay_start_time} - ${item.delay_end_time}`}
+                      department={item.purpose}
+                      location={item.place}
+                      doctor={item.doctor}
+                      index={index}
+                      total={patientInfo.appoint.length}
+                      status={item.status}
+                    />
+                  </View>
+                ))
+              )}
+            </ScrollView>
+          </View>
+
+          {/* Grid Menu */}
+          <GridMenu
+            items={menuItems}
+            onPressItem={handleMenuPress}
+            notificationCount={notificationCount}
+          />
         </View>
 
-        {/* Grid Menu */}
-        <GridMenu
-          items={menuItems}
-          onPressItem={handleMenuPress}
-          notificationCount={notificationCount}
-        />
+        <View style={styles.logoutWrapper}>
+          <Text
+            style={styles.logoutText}
+            onPress={() => setLogoutModalVisible(true)}
+          >
+            ออกจากระบบ
+          </Text>
+        </View>
 
         <View style={styles.logoutWrapper}>
           <Text
@@ -289,7 +300,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#EBF7FF",
-    padding: 16,
   },
 
   header: {
@@ -332,7 +342,7 @@ const styles = StyleSheet.create({
 
   cardWrapper: {
     marginHorizontal: -16,
-    marginBottom: -40,
+    marginBottom: 16,
   },
 
   emptyCard: {
@@ -354,7 +364,8 @@ const styles = StyleSheet.create({
   contentContainer: {
     flexGrow: 1,
     justifyContent: "space-between",
-    paddingBottom: 20,
+    padding: 16,
+    paddingBottom: 30,
   },
 
   logoutWrapper: {
