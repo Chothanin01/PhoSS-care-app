@@ -74,7 +74,9 @@ export default function MedicalHisPage() {
         id: item.vaccine_id,
         vaccineType: item.type,
         vaccineName: item.name,
-        receiveDate: item.vaccinated_date || "ยังไม่กำหนด",
+        receiveDate: item.vaccinated_date
+          ? formatDateThai(item.vaccinated_date)
+          : "ยังไม่กำหนด",
         recommendedAge: item.age,
 
         status:
