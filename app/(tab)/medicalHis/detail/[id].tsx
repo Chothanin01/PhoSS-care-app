@@ -77,17 +77,20 @@ export default function MedicalHistoryDetailPage() {
 
         status:
           item.vaccinated_status === "completed"
-            ? "ได้รับวัคซีนเเล้ว"
-            : item.vaccinated_status === "pending"
-              ? "รอรับวัคซีน"
-              : "ยังไม่ได้รับวัคซีน",
-
+            ? "ได้รับวัคซีนแล้ว"
+            : item.vaccinated_status === "ongoing"
+              ? "ยังไม่ได้รับวัคซีน"
+              : item.vaccinated_status === "pending"
+                ? "ยังไม่ได้รับวัคซีน"
+                : "รอรับวัคซีน",
         statusColor:
           item.vaccinated_status === "completed"
             ? "#58AD46"
-            : item.vaccinated_status === "pending"
-              ? "#FFD57B"
-              : "#FF0505",
+            : item.vaccinated_status === "ongoing"
+              ? "#FF0505"
+              : item.vaccinated_status === "pending"
+                ? "#9CA3AF"
+                : "#FFD57B",
       });
     } catch (err) {
       console.log("vaccine detail error:", err);
@@ -115,21 +118,26 @@ export default function MedicalHistoryDetailPage() {
         id: item.appoint_id,
         no: item.no,
         date:
-          item.date === "0001-01-01"
+          !item.date || item.date === "0001-01-01"
             ? "ไม่ระบุวันที่"
             : item.date,
+
         doctor: item.doctor,
         treatment: item.note || "-",
         purpose: item.purpose,
         symptom: item.symptom || "-",
-        pulse: item.health?.pulse || "-",
-        pressure: item.health?.pressure || "-",
-        height: item.health?.height || "-",
-        weight: item.health?.weight || "-",
-        bmi: item.health?.bmi || "-",
-        sugar: item.health?.sugar || "-",
-        nextId: item.next_appoint_id,
-        prevId: item.prev_appoint_id,
+
+        pulse: item.health?.pulse ?? "-",
+        pressure: item.health?.pressure ?? "-",
+        height: item.health?.height ?? "-",
+        weight: item.health?.weight ?? "-",
+        bmi: item.health?.bmi ?? "-",
+        sugar: item.health?.sugar ?? "-",
+
+        nextId: item.next_appoint_id ?? null,
+        prevId: item.prev_appoint_id ?? null,
+
+        colorStatus: item.color_status, 
       });
     } catch (err) {
       console.log("medical detail error:", err);
@@ -162,6 +170,13 @@ export default function MedicalHistoryDetailPage() {
       },
     });
   };
+   if (loading || !data) {
+    return (
+      <View style={styles.wrapper}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.wrapper}>
@@ -250,11 +265,11 @@ export default function MedicalHistoryDetailPage() {
               <View style={styles.statusRow}>
                 <Text style={styles.text}>สถานะ : </Text>
                 <View
-                  style={[
-                    styles.statusBadge,
-                    { backgroundColor: data.statusColor },
-                  ]}
-                >
+                style={[
+                 styles.statusBadge,
+                 { backgroundColor: data.colorStatus },
+                 ]}
+                 >
                   <Text style={styles.statusText}>
                     {data.status}
                   </Text>

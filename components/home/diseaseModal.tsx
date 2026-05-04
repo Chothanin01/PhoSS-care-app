@@ -17,7 +17,7 @@ type Props = {
   selectedDisease: string | null;
   setSelectedDisease: (val: string | null) => void;
   targetPath: MenuPath | null;
-  mode: "appoint" | "history"; // ✅ เพิ่ม
+  mode: "appoint" | "history"; 
 };
 
 type DiseaseItem = {
@@ -31,7 +31,7 @@ export default function DiseaseModal({
   selectedDisease,
   setSelectedDisease,
   targetPath,
-  mode, // ✅ รับมา
+  mode, 
 }: Props) {
   const [diseases, setDiseases] = useState<DiseaseItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -51,13 +51,12 @@ export default function DiseaseModal({
       const res = await api.get(url, {
         params:
           mode === "appoint"
-            ? { type: "appoint" } // ✅ เฉพาะเลื่อนนัด
+            ? { type: "appoint" }
             : {},
       });
 
       const list = res.data?.data || [];
 
-      // 🔥 เงื่อนไขสำคัญ
       if (mode === "appoint" && list.length === 0) {
         onClose();
         setShowSuccessModal(true);
@@ -77,7 +76,7 @@ export default function DiseaseModal({
     if (visible) {
       fetchDiseases();
     }
-  }, [visible, mode]); // ✅ ใส่ mode ด้วย
+  }, [visible, mode]); 
 
   const handleConfirm = () => {
     if (!selectedDisease || !targetPath) return;
@@ -92,7 +91,7 @@ export default function DiseaseModal({
       pathname: targetPath,
       params: {
         disease_id: selectedDisease,
-        disease_name: selected?.name, // ✅ เพิ่ม
+        disease_name: selected?.name,
       },
     });
 
