@@ -249,7 +249,6 @@ export default function RescheduleScreen() {
                     disabled={!day || !isAvailable}
                     onPress={() => {
                       setSelectedDate(new Date(year, month, day!));
-                      setSelectedTime(null);
                     }}
                   >
                     <View
