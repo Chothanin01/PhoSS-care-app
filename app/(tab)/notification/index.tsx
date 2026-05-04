@@ -18,6 +18,7 @@ type NotificationItem = {
   body: string;
   created_at: string;
   is_read: boolean;
+  disease_id?: string;
 };
 
 export default function NotificationPage() {
@@ -67,10 +68,8 @@ export default function NotificationPage() {
       )
     );
 
-    if (
-      item.header === "ใบรับรองแพทย์"
-    ) {
-      router.push("/(tab)/document");
+    if (item.header === "การเลื่อนนัด" && item.disease_id) {
+      router.push(`/(tab)/home/appointment/${item.disease_id}`);
     }
   };
 
