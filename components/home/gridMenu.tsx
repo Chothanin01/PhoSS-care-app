@@ -1,6 +1,6 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { MenuPath } from "@/types/navigation";
+import { Ionicons } from "@expo/vector-icons";
+import { Linking, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type MenuItem = {
   label: string;
@@ -15,13 +15,25 @@ type Props = {
 };
 
 export default function GridMenu({ items, onPressItem, notificationCount = 0 }: Props) {
+  const openPDF = () => {
+    const url =
+      "https://drive.google.com/file/d/1Ugdtu-fcUPo6KCI6kgtMLE_CqJczL03-/preview";
+    Linking.openURL(url);
+  };
+
   return (
     <View style={styles.grid}>
       {items.map((item, index) => (
         <TouchableOpacity
           key={index}
           style={styles.box}
-          onPress={() => onPressItem(item.path)}
+          onPress={() => {
+            if (item.path === "/(tab)/guide") {
+              openPDF(); 
+            } else {
+              onPressItem(item.path); 
+            }
+          }}
         >
           <View>
             <Ionicons name={item.icon} size={28} color="#05548D" />
@@ -29,9 +41,7 @@ export default function GridMenu({ items, onPressItem, notificationCount = 0 }: 
               <View style={styles.redDot} />
             )}
           </View>
-          <Text style={styles.boxText}>
-            {item.label}
-          </Text>
+          <Text style={styles.boxText}>{item.label}</Text>
         </TouchableOpacity>
       ))}
     </View>
