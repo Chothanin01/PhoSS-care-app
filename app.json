@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "PhoSS-Care",
+    "name": "interface",
     "slug": "interface",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -12,7 +12,6 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.chothanin.phosscare", 
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

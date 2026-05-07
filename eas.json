@@ -1,7 +1,6 @@
 {
   "cli": {
-    "version": ">= 18.11.0",
-    "appVersionSource": "remote"
+    "version": ">= 10.0.0"
   },
   "build": {
     "development": {
@@ -9,9 +8,14 @@
       "distribution": "internal"
     },
     "preview": {
+      "distribution": "internal",
       "android": {
         "buildType": "apk"
-      }},
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://phoss-care-server.onrender.com"
+      }
+    },
     "production": {}
   },
   "submit": {
