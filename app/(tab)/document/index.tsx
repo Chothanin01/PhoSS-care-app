@@ -1,76 +1,139 @@
 import BackButton from "@/components/backButton";
+import { api } from "@/services/api";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-
-const documentsList = [
-  "ข้อมูลผู้ป่วย",
-  "ประวัติการรักษา",
-  "ประวัติการฉีดวัคซีน",
-  "ใบรับรองแพทย์",
-];
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type StatusType = "idle" | "selected";
 
 type DocItem = {
   name: string;
+  type: string;
+  disease_id?: string;
   status: StatusType;
+  disabled: boolean; 
 };
 
 export default function DocumentRequestScreen() {
-  const [documents, setDocuments] = useState<DocItem[]>(
-    documentsList.map((doc) => ({
-      name: doc,
-      status: "idle",
-    }))
-  );
-
+  const [documents, setDocuments] = useState<DocItem[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
+  const fetchDocuments = async () => {
+    try {
+      const res = await api.get("/v1/patient/requests");
+
+      if (res.data.success) {
+        const mapped = res.data.data
+          .filter((item: any) => item.available)
+          .map((item: any) => ({
+            name: item.name,
+            type: item.type,
+            disease_id: item.disease_id,
+            status: "idle",
+            disabled: item.disabled, 
+          }));
+
+        setDocuments(mapped);
+      }
+    } catch (error) {
+      console.log("fetchDocuments error:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
+
+  useEffect(() => {
+    if (showSuccess) {
+      const timer = setTimeout(() => {
+        setShowSuccess(false);
+        router.replace("/home");
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccess]);
 
   const toggleItem = (item: string) => {
     setDocuments((prev) =>
       prev.map((doc) => {
         if (doc.name !== item) return doc;
 
+        if (doc.disabled) return doc;
+
         return {
           ...doc,
-          status:
-            doc.status === "selected" ? "idle" : "selected",
+          status: doc.status === "selected" ? "idle" : "selected",
         };
       })
     );
   };
 
-  const isAllSelected = documents.every(
-    (doc) => doc.status === "selected"
-  );
+  const selectableDocs = documents.filter((doc) => !doc.disabled);
+
+  const isAllSelected =
+    selectableDocs.length > 0 &&
+    selectableDocs.every((doc) => doc.status === "selected");
 
   const toggleSelectAll = () => {
     setDocuments((prev) =>
-      prev.map((doc) => ({
-        ...doc,
-        status: isAllSelected ? "idle" : "selected",
-      }))
+      prev.map((doc) => {
+        if (doc.disabled) return doc; 
+
+        return {
+          ...doc,
+          status: isAllSelected ? "idle" : "selected",
+        };
+      })
     );
   };
 
-  const handleRequest = () => {
-    const hasSelected = documents.some(
-      (doc) => doc.status === "selected"
+  const handleRequest = async () => {
+    const selectedDocs = documents.filter(
+      (doc) => doc.status === "selected" && !doc.disabled 
     );
 
-    if (!hasSelected) return;
+    if (selectedDocs.length === 0) return;
 
-    setShowSuccess(true);
+    try {
+      const documentTypes: string[] = [];
+      const medicalRequests: any[] = [];
 
-    setTimeout(() => {
-      setShowSuccess(false);
-    }, 3000);
+      selectedDocs.forEach((doc) => {
+        if (doc.type === "document") {
+          documentTypes.push(doc.name);
+        }
+
+        if (doc.type === "medical" && doc.disease_id) {
+          medicalRequests.push({
+            type: "medical",
+            disease_id: doc.disease_id,
+          });
+        }
+      });
+
+      const requestsPayload: any[] = [];
+
+      if (documentTypes.length > 0) {
+        requestsPayload.push({
+          type: "document",
+          document_types: documentTypes,
+        });
+      }
+
+      requestsPayload.push(...medicalRequests);
+
+      const finalPayload = {
+        requests: requestsPayload,
+      };
+
+      await api.post("/v1/patient/requests", finalPayload);
+
+      setShowSuccess(true);
+    } catch (error) {
+      console.log("request error:", error);
+    }
   };
 
   return (
@@ -79,13 +142,11 @@ export default function DocumentRequestScreen() {
         <BackButton />
         <Text style={styles.headerTitle}>เอกสารที่ต้องการขอ</Text>
       </View>
-
       <View style={styles.card}>
         <View style={styles.topRow}>
           <Text style={styles.title}>
             กรุณาเลือกเอกสารที่ต้องการขอ
           </Text>
-
           <TouchableOpacity
             style={styles.selectAll}
             onPress={toggleSelectAll}
@@ -103,28 +164,35 @@ export default function DocumentRequestScreen() {
 
         {documents.map((item) => {
           const isSelected = item.status === "selected";
-
           return (
             <TouchableOpacity
               key={item.name}
               style={[
                 styles.option,
                 isSelected && styles.optionActive,
+                item.disabled && styles.optionDisabled, 
               ]}
               onPress={() => toggleItem(item.name)}
+              disabled={item.disabled} // ✅
             >
               <View
                 style={[
                   styles.radio,
                   isSelected && styles.radioActive,
+                  item.disabled && styles.radioDisabled, 
                 ]}
               >
-                {isSelected && (
+                {isSelected && !item.disabled && (
                   <Text style={styles.check}>✓</Text>
                 )}
               </View>
 
-              <Text style={styles.optionText}>
+              <Text
+                style={[
+                  styles.optionText,
+                  item.disabled && styles.textDisabled,
+                ]}
+              >
                 {item.name}
               </Text>
             </TouchableOpacity>
@@ -140,7 +208,6 @@ export default function DocumentRequestScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-
       {showSuccess && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
@@ -153,14 +220,12 @@ export default function DocumentRequestScreen() {
                 />
               </View>
             </View>
-
             <Text style={styles.modalTitle}>
               ระบบได้ส่งคำขอ
             </Text>
             <Text style={styles.modalTitle}>
               เอกสารรับรองเรียบร้อยแล้ว
             </Text>
-
             <Text style={styles.modalDesc}>
               ระบบจะทำการแจ้งเตือนเมื่อคำขอได้รับอนุมัติแล้ว
             </Text>
@@ -217,7 +282,7 @@ const styles = StyleSheet.create({
   selectAllText: {
     marginLeft: 6,
     fontSize: 12,
-    fontFamily: "IBMPlexSansThai_500Medium", 
+    fontFamily: "IBMPlexSansThai_500Medium",
   },
 
   checkbox: {
@@ -344,5 +409,18 @@ const styles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
     fontFamily: "IBMPlexSansThai_500Medium",
+  },
+  optionDisabled: {
+    backgroundColor: "#F5F5F5",
+    borderColor: "#DDD",
+  },
+
+  radioDisabled: {
+    borderColor: "#CCC",
+    backgroundColor: "#EEE",
+  },
+
+  textDisabled: {
+    color: "#AAA",
   },
 });
