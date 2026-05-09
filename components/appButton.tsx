@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
 
   text: {
     fontSize: 18,
-    fontFamily: "IBMPlexSansThai_700Bold",
+    fontFamily: "Sarabun_700Bold",
   },
 
   primaryText: {

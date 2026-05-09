@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     marginLeft: 46,
-    fontFamily: "IBMPlexSansThai_700bold",
+    fontFamily: "Sarabun_700bold",
   },
 
   card: {
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 18,
-    fontFamily: "IBMPlexSansThai_600Semibold",
+    fontFamily: "Sarabun_600Semibold",
   },
 
   topRow: {
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   selectAllText: {
     marginLeft: 6,
     fontSize: 12,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
 
   checkbox: {
@@ -335,12 +335,12 @@ const styles = StyleSheet.create({
   check: {
     color: "#fff",
     fontSize: 14,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
 
   optionText: {
     fontSize: 14,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
 
   button: {
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#05548D",
     fontSize: 16,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
 
   modalOverlay: {
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     textAlign: "center",
-    fontFamily: "IBMPlexSansThai_700bold",
+    fontFamily: "Sarabun_700bold",
   },
 
   modalDesc: {
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
     textAlign: "center",
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
   optionDisabled: {
     backgroundColor: "#F5F5F5",

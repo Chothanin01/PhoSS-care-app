@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
-import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import BackButton from "@/components/backButton";
 import { api } from "@/services/api";
+import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 type NotificationItem = {
   id: string;
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 22,
-    fontFamily: "IBMPlexSansThai_700Bold",
+    fontFamily: "Sarabun_700Bold",
     textAlign: "center",
     marginLeft: 24,
     marginTop: 6,
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
 
   description: {
     fontSize: 13,
-    fontFamily: "IBMPlexSansThai_400Regular",
+    fontFamily: "Sarabun_400Regular",
     color: "#666",
     lineHeight: 18,
   },
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   },
 
   time: {
-    fontFamily: "IBMPlexSansThai_400Regular",
+    fontFamily: "Sarabun_400Regular",
     fontSize: 13,
     color: "#999",
     marginBottom: 6,
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
 
   titleNoti: {
     fontSize: 18,
-    fontFamily: "IBMPlexSansThai_600SemiBold",
+    fontFamily: "Sarabun_600SemiBold",
   },
 
   cardWrapper: {

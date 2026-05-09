@@ -432,12 +432,12 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 24,
-    fontFamily: "IBMPlexSansThai_700Bold",
+    fontFamily: "Sarabun_700Bold",
   },
 
   titleLarge: {
     fontSize: 20,
-    fontFamily: "IBMPlexSansThai_600SemiBold",
+    fontFamily: "Sarabun_600SemiBold",
     marginBottom: 4,
   },
 
@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
 
   textMedium: {
     fontSize: 14,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
     marginBottom: 2,
   },
 
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
 
   statusText: {
     fontSize: 12,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
 
   modalOverlay: {
@@ -554,13 +554,13 @@ const styles = StyleSheet.create({
 
   pendingText: {
     fontSize: 18,
-    fontFamily: "IBMPlexSansThai_600SemiBold",
+    fontFamily: "Sarabun_600SemiBold",
     color: "#7A7A7A",
   },
 
   oldDateAndTime: {
     fontSize: 14,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
     textDecorationLine: "line-through",
     color: "#000",
     marginRight: 4,
@@ -568,7 +568,7 @@ const styles = StyleSheet.create({
 
   newDateAndTime: {
     fontSize: 14,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
     color: "#7A7A7A",
   },
 

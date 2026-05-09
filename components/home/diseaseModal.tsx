@@ -4,11 +4,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Modal,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Modal,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 type Props = {
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 20,
-    fontFamily: "IBMPlexSansThai_700Bold",
+    fontFamily: "Sarabun_700Bold",
     marginBottom: 12,
   },
 
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
 
   optionText: {
     fontSize: 16,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
 
   confirmBtn: {
@@ -303,11 +303,11 @@ const styles = StyleSheet.create({
   confirmText: {
     color: "#fff",
     fontSize: 18,
-    fontFamily: "IBMPlexSansThai_600SemiBold",
+    fontFamily: "Sarabun_600SemiBold",
   },
   subtitle: {
     fontSize: 20,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
   modalOverlay: {
     flex: 1,
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 16,
     textAlign: "center",
-    fontFamily: "IBMPlexSansThai_600Semibold",
+    fontFamily: "Sarabun_600Semibold",
   },
 
   modalDesc: {
@@ -356,6 +356,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#6b7280",
     textAlign: "center",
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
 });

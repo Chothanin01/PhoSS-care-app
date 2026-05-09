@@ -3,13 +3,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  Image,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Image,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function LoginScreen() {
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginTop: 20,
     color: "#000",
-    fontFamily: "IBMPlexSansThai_700Bold",
+    fontFamily: "Sarabun_700Bold",
   },
 
   card: {
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     color: "#05548D",
     marginBottom: 20,
     marginTop: 20,
-    fontFamily: "IBMPlexSansThai_700Bold",
+    fontFamily: "Sarabun_700Bold",
   },
 
   label: {
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 10,
     color: "#000",
-    fontFamily: "IBMPlexSansThai_600Semibold",
+    fontFamily: "Sarabun_600Semibold",
   },
 
   inputWrapper: {
@@ -218,13 +218,13 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     padding: 12,
-    fontFamily: "IBMPlexSansThai_400Regular",
+    fontFamily: "Sarabun_400Regular",
   },
 
   inputPassword: {
     flex: 1,
     padding: 12,
-    fontFamily: "IBMPlexSansThai_400Regular",
+    fontFamily: "Sarabun_400Regular",
   },
 
   passwordWrapper: {
@@ -253,6 +253,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#FFF",
     fontSize: 20,
-    fontFamily: "IBMPlexSansThai_700Bold",
+    fontFamily: "Sarabun_700Bold",
   },
 });

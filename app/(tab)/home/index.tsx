@@ -1,12 +1,12 @@
 import DiseaseModal from "@/components/home/diseaseModal";
 import GridMenu from "@/components/home/gridMenu";
 import AppointmentCard from "@/components/home/homeAppointmentCard";
+import { hasUnread } from "@/data/notification";
+import { api } from "@/services/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { hasUnread } from "@/data/notification";
-import { api } from "@/services/api";
 
 type Appointment = {
   appoint_id: string;
@@ -91,14 +91,14 @@ export default function Page() {
 
   const handleMenuPress = (path: MenuPath) => {
   if (path === "/(tab)/reSchedule") {
-    setMode("appoint"); // ✅ ต้องมี
+    setMode("appoint");
     setTargetPath(path);
     setModalVisible(true);
     return;
   }
 
   if (path === "/(tab)/medicalHis") {
-    setMode("history"); // ✅ ต้องมี
+    setMode("history");
     setTargetPath(path);
     setModalVisible(true);
     return;
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 18,
-    fontFamily: "IBMPlexSansThai_600SemiBold",
+    fontFamily: "Sarabun_600SemiBold",
     textAlign: "right",
     marginRight: 20,
   },
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
 
   hn: {
     fontSize: 14,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
     textAlign: "right",
     marginRight: 20,
   },
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
 
   emptyText: {
     fontSize: 16,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
     color: "#7A7A7A",
     marginTop: 8,
   },
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   logoutText: {
     fontSize: 20,
     color: "#05548D",
-    fontFamily: "IBMPlexSansThai_600SemiBold",
+    fontFamily: "Sarabun_600SemiBold",
     textDecorationLine: "underline",
   },
 
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
 
   modalTitle: {
     fontSize: 20,
-    fontFamily: "IBMPlexSansThai_700Bold",
+    fontFamily: "Sarabun_700Bold",
     marginBottom: 10,
     textAlign: "center",
   },
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 20,
     textAlign: "center",
-    fontFamily: "IBMPlexSansThai_600Semibold",
+    fontFamily: "Sarabun_600Semibold",
   },
 
   modalButtonRow: {

@@ -5,11 +5,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function MedicalHistoryDetailPage() {
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 22,
-    fontFamily: "IBMPlexSansThai_700Bold",
+    fontFamily: "Sarabun_700Bold",
     textAlign: "center",
     marginLeft: 24,
     marginTop: 6,
@@ -383,13 +383,13 @@ const styles = StyleSheet.create({
 
   cardTitle: {
     fontSize: 20,
-    fontFamily: "IBMPlexSansThai_700Bold",
+    fontFamily: "Sarabun_700Bold",
     marginBottom: 8,
   },
 
   text: {
     fontSize: 16,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
     marginBottom: 6,
   },
 
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
   statusText: {
     color: "#000000",
     fontSize: 14,
-    fontFamily: "IBMPlexSansThai_600SemiBold",
+    fontFamily: "Sarabun_600SemiBold",
   },
 
   statusRow: {
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
   navText: {
     fontSize: 18,
     color: "#05548D",
-    fontFamily: "IBMPlexSansThai_700Bold",
+    fontFamily: "Sarabun_700Bold",
   },
   buttonContent: {
     flexDirection: "row",

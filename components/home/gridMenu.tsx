@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 12,
     textAlign: "center",
-    fontFamily: "IBMPlexSansThai_600SemiBold",
+    fontFamily: "Sarabun_600SemiBold",
   },
   redDot: {
     width: 10,

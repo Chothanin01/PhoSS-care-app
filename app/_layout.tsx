@@ -2,20 +2,20 @@ import { Stack } from "expo-router";
 import { View, StyleSheet } from "react-native";
 import { useFonts } from "expo-font";
 import {
-  IBMPlexSansThai_300Light,
-  IBMPlexSansThai_400Regular,
-  IBMPlexSansThai_500Medium,
-  IBMPlexSansThai_600SemiBold,
-  IBMPlexSansThai_700Bold,
-} from "@expo-google-fonts/ibm-plex-sans-thai";
+  Sarabun_300Light,
+  Sarabun_400Regular,
+  Sarabun_500Medium,
+  Sarabun_600SemiBold,
+  Sarabun_700Bold,
+} from "@expo-google-fonts/sarabun";
 
 export default function RootLayout() {
   const [loaded] = useFonts({
-    IBMPlexSansThai_300Light,
-    IBMPlexSansThai_400Regular,
-    IBMPlexSansThai_500Medium,
-    IBMPlexSansThai_600SemiBold,
-    IBMPlexSansThai_700Bold,
+    Sarabun_300Light,
+    Sarabun_400Regular,
+    Sarabun_500Medium,
+    Sarabun_600SemiBold,
+    Sarabun_700Bold,
   });
 
   if (!loaded) return null;

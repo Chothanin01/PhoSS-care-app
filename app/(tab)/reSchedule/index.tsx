@@ -4,11 +4,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Modal,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Modal,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function RescheduleScreen() {
@@ -360,7 +360,7 @@ export default function RescheduleScreen() {
 /* ---------- STYLE ---------- */
 const styles = StyleSheet.create({
   font: {
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
 
   container: {
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 24,
-    fontFamily: "IBMPlexSansThai_600Semibold",
+    fontFamily: "Sarabun_600Semibold",
   },
 
   content: {
@@ -413,14 +413,14 @@ const styles = StyleSheet.create({
 
   monthText: {
     fontSize: 16,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
 
   selectedDateText: {
     fontSize: 14,
     color: "#05548D",
     textAlign: "right",
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
 
   grid: {
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
     width: "14.28%",
     textAlign: "center",
     marginBottom: 5,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
 
   dayBox: {
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginTop: 20,
     fontSize: 16,
-    fontFamily: "IBMPlexSansThai_600Semibold",
+    fontFamily: "Sarabun_600Semibold",
   },
 
   timeItem: {
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
 
   timeText: {
     fontSize: 15,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
 
   button: {
@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontSize: 16,
-    fontFamily: "IBMPlexSansThai_600Semibold",
+    fontFamily: "Sarabun_600Semibold",
   },
 
   modalOverlay: {
@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 16,
     textAlign: "center",
-    fontFamily: "IBMPlexSansThai_600Semibold",
+    fontFamily: "Sarabun_600Semibold",
   },
 
   modalDesc: {
@@ -569,7 +569,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#6b7280",
     textAlign: "center",
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
   dayCurrent: {
     backgroundColor: "#CBCBCB",

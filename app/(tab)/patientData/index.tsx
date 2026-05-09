@@ -144,7 +144,6 @@ export default function PatientDataPage() {
           อายุ : {fullInfo?.patient.age_years} ปี {fullInfo?.patient.age_months} เดือน {fullInfo?.patient.age_days} วัน
           {"    "}เพศ : {getSexText(fullInfo?.patient.sex)}
         </Text>
-        <Text style={styles.text}>เลขบัตรประชาชน : {fullInfo?.patient.idcard}</Text>
         <Text style={styles.text}>สิทธิการรักษา : {fullInfo?.patient.rights}</Text>
         <Text style={styles.text}>
           สัญชาติ : {fullInfo?.patient.nationality}    เชื้อชาติ : {fullInfo?.patient.ethnicity}
@@ -263,7 +262,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 22,
-    fontFamily: "IBMPlexSansThai_700Bold",
+    fontFamily: "Sarabun_700Bold",
   },
 
   card: {
@@ -275,19 +274,19 @@ const styles = StyleSheet.create({
 
   cardTitle: {
     fontSize: 16,
-    fontFamily: "IBMPlexSansThai_600SemiBold",
+    fontFamily: "Sarabun_600SemiBold",
     marginBottom: 8,
   },
 
   text: {
     fontSize: 14,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
     marginBottom: 4,
   },
 
   specialTitle: {
     fontSize: 14,
-    fontFamily: "IBMPlexSansThai_600SemiBold",
+    fontFamily: "Sarabun_600SemiBold",
     color: "#05548D",
     marginTop: 8,
     marginBottom: 4,
@@ -310,7 +309,7 @@ const styles = StyleSheet.create({
 
   staffTitle: {
     fontSize: 14,
-    fontFamily: "IBMPlexSansThai_600SemiBold",
+    fontFamily: "Sarabun_600SemiBold",
     marginBottom: 2,
   },
 

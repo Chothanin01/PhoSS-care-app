@@ -132,13 +132,13 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 20,
-    fontFamily: "IBMPlexSansThai_600SemiBold",
+    fontFamily: "Sarabun_600SemiBold",
     marginBottom: 4,
   },
 
   text: {
     fontSize: 14,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
     marginBottom: 2,
   },
 
@@ -185,12 +185,12 @@ const styles = StyleSheet.create({
   statusText: {
     color: "#856404",
     fontSize: 12,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
 
   oldDateAndTime: {
     fontSize: 14,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
     textDecorationLine: "line-through",
     color: "#000",
     marginRight: 4,
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
 
   newDateAndTime: {
     fontSize: 14,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
     color: "#7A7A7A",
   },
 });

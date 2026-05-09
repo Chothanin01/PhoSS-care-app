@@ -391,12 +391,12 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 24,
-    fontFamily: "IBMPlexSansThai_600Semibold",
+    fontFamily: "Sarabun_600Semibold",
   },
 
   subTitle: {
     fontSize: 22,
-    fontFamily: "IBMPlexSansThai_700Bold",
+    fontFamily: "Sarabun_700Bold",
   },
 
   card: {
@@ -409,18 +409,18 @@ const styles = StyleSheet.create({
 
   visitTitle: {
     fontSize: 20,
-    fontFamily: "IBMPlexSansThai_600SemiBold",
+    fontFamily: "Sarabun_600SemiBold",
   },
 
   text: {
     fontSize: 16,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
     marginTop: 8,
   },
 
   date: {
     fontSize: 14,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
 
   rowBetween: {
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
   statusText: {
     color: "#000000",
     fontSize: 14,
-    fontFamily: "IBMPlexSansThai_600SemiBold",
+    fontFamily: "Sarabun_600SemiBold",
   },
 
 
@@ -475,7 +475,7 @@ const styles = StyleSheet.create({
 
   dropdownText: {
     fontSize: 16,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
 
   dropdownMenu: {
@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    fontFamily: "IBMPlexSansThai_500Medium",
+    fontFamily: "Sarabun_500Medium",
   },
   arrowButton: {
     marginLeft: 8,
@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
   navText: {
     fontSize: 18,
     color: "#05548D",
-    fontFamily: "IBMPlexSansThai_700Bold",
+    fontFamily: "Sarabun_700Bold",
   },
   buttonContent: {
     flexDirection: "row",
