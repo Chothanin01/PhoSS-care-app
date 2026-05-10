@@ -82,7 +82,7 @@ export default function Page() {
     { label: "เลื่อนนัด", icon: "calendar-outline", path: "/(tab)/reSchedule", needDisease: true },
     { label: "ข้อมูลผู้ป่วย", icon: "person-outline", path: "/(tab)/patientData" },
     { label: "การรักษา", icon: "medkit-outline", path: "/(tab)/medicalHis", needDisease: true },
-    { label: "ขอเอกสาร", icon: "cloud-download-outline", path: "/(tab)/document" },
+    { label: "ขอเอกสาร", icon: "document-text-outline", path: "/(tab)/document" },
     { label: "แจ้งเตือน", icon: "notifications-outline", path: "/(tab)/notification" },
     { label: "คู่มือการใช้งาน", icon: "settings-outline", path: "/(tab)/guide" },
   ] as const;
