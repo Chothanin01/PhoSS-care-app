@@ -1,12 +1,13 @@
 import DiseaseModal from "@/components/home/diseaseModal";
 import GridMenu from "@/components/home/gridMenu";
 import AppointmentCard from "@/components/home/homeAppointmentCard";
-import { hasUnread } from "@/data/notification";
 import { api } from "@/services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 type Appointment = {
   appoint_id: string;
@@ -51,9 +52,8 @@ export default function Page() {
 
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [mode, setMode] = useState<"appoint" | "history">("appoint");
-  const [loading, setLoading] = useState(true);
+  const [notificationCount, setNotificationCount] = useState(0);
 
-  const notificationCount = hasUnread() ? 1 : 0;
   const formatThaiDate = (dateString: string) => {
     const date = new Date(dateString);
     const thaiMonths = [
@@ -130,6 +130,25 @@ export default function Page() {
     }
   };
 
+  const fetchNotificationStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) return;
+
+      const res = await api.get("/v1/patient/noti/status", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setNotificationCount(res.data.has_unread ? 1 : 0);
+
+    } catch (error) {
+      console.log("fetch notification status error:", error);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -148,9 +167,12 @@ export default function Page() {
     }
   };
 
-  useEffect(() => {
-    fetchPatientAppointments();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchPatientAppointments();
+      fetchNotificationStatus();
+    }, [])
+  );
 
   return (
     <>
