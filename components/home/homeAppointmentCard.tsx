@@ -83,10 +83,10 @@ export default function AppointmentCard({
 
       {showDelayStatus ? (
         <>
-        <view>
+        <View>
           <Text style={styles.oldDateAndTime}>{date}</Text>
           <Text style={styles.newDateAndTime}>({delay_date})</Text>
-        </view>
+        </View>
         </>
       ) : (
         <Text style={styles.text}>{date}</Text>
@@ -94,10 +94,10 @@ export default function AppointmentCard({
       
       {showDelayStatus ? (
         <>
-        <view>
+        <View>
           <Text style={styles.oldDateAndTime}>{time} น.</Text>
           <Text style={styles.newDateAndTime}>({delay_time} น.)</Text>
-        </view>
+        </View>
         </>
       ) : (
         <Text style={styles.text}>{time} น.</Text>
