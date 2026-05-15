@@ -9,6 +9,7 @@ import {
     Text,
     TouchableOpacity,
     View,
+    ScrollView,
 } from "react-native";
 
 export default function RescheduleScreen() {
@@ -99,6 +100,15 @@ export default function RescheduleScreen() {
   const isAvailableDay = (day: number) => {
     const date = new Date(year, month, day);
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    date.setHours(0, 0, 0, 0);
+
+    if (date < today) {
+      return false;
+    }
+
     const thaiDays = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
     const thaiDay = thaiDays[date.getDay()];
 
@@ -183,7 +193,11 @@ export default function RescheduleScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.wrapper}>
         <View style={styles.headerBar}>
           <BackButton />
@@ -240,7 +254,7 @@ export default function RescheduleScreen() {
 
                 const isAvailable =
                   day !== null &&
-                  (isAvailableDay(day) || isCurrentApiDate);
+                  isAvailableDay(day);
 
                 return (
                   <TouchableOpacity
@@ -353,12 +367,18 @@ export default function RescheduleScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </ScrollView>
   );
 }
 
 /* ---------- STYLE ---------- */
 const styles = StyleSheet.create({
+  contentContainer: {
+    flexGrow: 1,
+    justifyContent: "space-between",
+    paddingBottom: 30,
+  },
+
   font: {
     fontFamily: "Sarabun_500Medium",
   },
@@ -369,7 +389,7 @@ const styles = StyleSheet.create({
   },
 
   wrapper: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: "space-between",
   },
 

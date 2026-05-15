@@ -22,7 +22,11 @@ export default function RootLayout() {
 
   return (
     <View style={styles.container}>
-      <Stack />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      />
     </View>
   );
 }
