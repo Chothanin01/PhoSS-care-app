@@ -273,6 +273,15 @@ export default function MedicalHisPage() {
 
             </View>
           ))}
+
+          {isVaccine && filteredVaccine.length === 0 && (
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyText}>
+                ไม่มีประวัติวัคซีน
+              </Text>
+            </View>
+          )}
+
         {!isVaccine &&
           historyData.map((item) => (
             <View key={item.id} style={styles.card}>
@@ -328,6 +337,14 @@ export default function MedicalHisPage() {
               </View>
             </View>
           ))}
+
+          {!isVaccine && historyData.length === 0 && (
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyText}>
+                ไม่มีประวัติการรักษา
+              </Text>
+            </View>
+          )}
         <View style={styles.pagination}>
           <TouchableOpacity
             disabled={page === 1}
@@ -532,5 +549,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
+  },
+  emptyCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    paddingVertical: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+  },
+
+  emptyText: {
+    fontSize: 18,
+    color: "#6B7280",
+    fontFamily: "Sarabun_500Medium",
   },
 });

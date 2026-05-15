@@ -89,23 +89,79 @@ export default function Page() {
 
   type MenuPath = (typeof menuItems)[number]["path"];
 
-  const handleMenuPress = (path: MenuPath) => {
-  if (path === "/(tab)/reSchedule") {
-    setMode("appoint");
-    setTargetPath(path);
-    setModalVisible(true);
-    return;
-  }
+  const handleMenuPress = async (path: MenuPath) => {
+    if (path === "/(tab)/reSchedule") {
+      try {
+        const res = await api.get("/v1/patient/diseases", {
+          params: { type: "appoint" },
+        });
 
-  if (path === "/(tab)/medicalHis") {
-    setMode("history");
-    setTargetPath(path);
-    setModalVisible(true);
-    return;
-  }
+        const list = res.data?.data || [];
 
-  router.push(path);
-};
+        if (list.length === 0) {
+          setMode("appoint");
+          setModalVisible(true);
+          return;
+        }
+
+        if (list.length === 1) {
+          const disease = list[0];
+
+          router.push({
+            pathname: path,
+            params: {
+              disease_id: disease.disease_id,
+              disease_name: disease.name,
+            },
+          });
+
+          return;
+        }
+
+        setMode("appoint");
+        setTargetPath(path);
+        setModalVisible(true);
+
+      } catch (error) {
+        console.log("fetch diseases error:", error);
+      }
+
+      return;
+    }
+
+    if (path === "/(tab)/medicalHis") {
+      try {
+        const res = await api.get("/v1/patient/diseases");
+
+        const list = res.data?.data || [];
+
+        if (list.length === 1) {
+          const disease = list[0];
+
+          router.push({
+            pathname: path,
+            params: {
+              disease_id: disease.disease_id,
+              disease_name: disease.name,
+            },
+          });
+
+          return;
+        }
+
+        setMode("history");
+        setTargetPath(path);
+        setModalVisible(true);
+
+      } catch (error) {
+        console.log("fetch diseases error:", error);
+      }
+
+      return;
+    }
+
+    router.push(path);
+  };
 
   const fetchPatientAppointments = async () => {
     try {
