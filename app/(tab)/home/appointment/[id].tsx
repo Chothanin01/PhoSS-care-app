@@ -35,6 +35,7 @@ type AppointmentDetailData = {
   appointment_date: string;
   status: string;
   created_at: string;
+  note: string;
 };
 
 type BasicInfoData = {
@@ -313,6 +314,7 @@ export default function AppointmentDetail() {
             <Text style={styles.textMedium}>
               วันที่ออกใบนัด :{" "}{formatThaiDate(appointment.created_at)}
             </Text>
+            <Text style={styles.textMedium}>การเตรียมตัวก่อนพบแพทย์ : {appointment.note}</Text>
           </View>
 
           {status === "delay" && (

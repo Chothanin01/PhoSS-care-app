@@ -254,6 +254,7 @@ export default function Page() {
                       index={index}
                       total={patientInfo.appoint.length}
                       status={item.status}
+                      note={item.note}
                     />
                   </View>
                 ))

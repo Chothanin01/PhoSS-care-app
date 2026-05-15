@@ -18,6 +18,7 @@ type Props = {
   index: number;
   total: number;
   status?: string;
+  note: string;
 };
   const getStatusText = (status?: string) => {
     switch (status) {
@@ -49,6 +50,7 @@ export default function AppointmentCard({
   index,
   total,
   status,
+  note,
 }: Props) {
   const showDelayStatus = status === "delay";
 
@@ -105,6 +107,7 @@ export default function AppointmentCard({
       <Text style={styles.text}>นัดเพื่อ : {department}</Text>
       <Text style={styles.text}>สถานที่ : {location}</Text>
       <Text style={styles.text}>นัดพบแพทย์ : {doctor}</Text>
+      <Text style={styles.text}>การเตรียมตัวก่อนพบแพทย์ : {note}</Text>
 
       <View style={styles.dotContainer}>
         {Array.from({ length: total }).map((_, i) => (
